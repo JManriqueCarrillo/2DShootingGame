@@ -1,1 +1,10 @@
+Debug/
+*.opensdf
+*.sdf
+*.vcxproj
 *.vcproj
+*.filters
+*.user
+UpgradeLog.XML
+_UpgradeReport_Files/
+log.txt
