@@ -51,6 +51,7 @@ public:
 
 	int map[SCENE_WIDTH][SCENE_HEIGHT];
 	int auxMap[SCENE_WIDTH][SCENE_HEIGHT];
+	int * Pathmap;
 	int cx,cy;
 	bool isMoving;
 	int moveDir;

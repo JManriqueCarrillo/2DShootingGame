@@ -99,6 +99,7 @@ bool cGame::LoopProcess()
 
 		case STATE_GAME:
 						ProcessOrder();
+						Skeleton.Move();
 						//Critter.Move();
 						break;
 	}
@@ -128,6 +129,9 @@ void cGame::ProcessOrder()
 	int xo,xf,yo,yf;
 	//int b4pointer;
 	bool KeyPushed = false;
+
+	//Player position
+	int px,py;
 
 	//Mouse = Input.GetMouse();
 	Keyboard = Input.GetKeyboard();
@@ -182,6 +186,13 @@ void cGame::ProcessOrder()
 	}
 
 	Bullet.UpdateBullets(&Scene);
+
+	/**
+	* Enemy moving to the player
+	**/
+	Critter.GetCell(&px,&py);
+
+	Skeleton.GoToPlayer(Scene.Pathmap,px,py);
 
 	// Critter.SetPosition(x,y);
 	/*

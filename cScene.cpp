@@ -77,6 +77,22 @@ void cScene::GenerateMap()
 		case Oeste: map[0][8] = 6; map[0][9] = 6; break;
 		case Este: map[24][8] = 7; map[24][9] = 7; break;
 	}
+
+	//Pathmap for the enemy
+	Pathmap=(int *)malloc(sizeof(int)*(SCENE_HEIGHT*SCENE_WIDTH));
+
+	int k=0;
+
+	for(y=2;y<SCENE_HEIGHT-2;y++)
+	{
+		for(x=1;x<SCENE_WIDTH-1;x++)
+		{
+			
+				Pathmap[k]=map[x][y];
+				k++;
+		}
+	}
+
 }
 
 void cScene::MoveMap(int dir)
