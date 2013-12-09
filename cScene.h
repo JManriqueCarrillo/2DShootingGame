@@ -7,15 +7,15 @@
 #define SCREEN_RES_Y	600
 
 //Visible part
-#define SCENE_WIDTH		20
-#define SCENE_HEIGHT	17
+#define SCENE_WIDTH		25
+#define SCENE_HEIGHT	19
 
 //Dimension = Area^2
 #define SCENE_AREA		32
 
 //Map coordinate beginning
 #define SCENE_Xo		0
-#define SCENE_Yo		56
+#define SCENE_Yo		0
 #define SCENE_Xf		( SCENE_Xo + (SCENE_WIDTH<<5) )
 #define SCENE_Yf		( SCENE_Yo + (SCENE_HEIGHT<<5) )
 
@@ -24,6 +24,12 @@
 #define RADAR_Yo		60
 #define RADAR_Xf		800
 #define RADAR_Yf		188
+
+//Direction
+#define Norte		1
+#define Sur			2
+#define Este		3
+#define Oeste		4
 
 class cScene
 {
@@ -34,13 +40,21 @@ public:
 	virtual ~cScene();
 
 	void LoadMap(char *file);
+	void GenerateMap();
 	void Move(int pointer);
+	void MoveMap(int dir);
+	void getMoveMapOffsets(int *offsetx, int *offsety, int *offsetWIDTH, int *offsetHEIGHT);
+	void getMovePlayerOffsets(float *offsetx, float *offsety);
 	void MoveByRadar(int x,int y);
+	bool isWalkable(int x, int y);
 	bool Visible(int cellx,int celly);
 
-	int map[SCENE_AREA][SCENE_AREA];
+	int map[SCENE_WIDTH][SCENE_HEIGHT];
+	int auxMap[SCENE_WIDTH][SCENE_HEIGHT];
 	int cx,cy;
+	bool isMoving;
+	int moveDir;
+	int moveCounter;
 };
-
 
 #endif

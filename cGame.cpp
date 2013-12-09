@@ -1,6 +1,7 @@
 
 #include "cGame.h"
 #include "cLog.h"
+#include "cKeyboard.h";
 
 cGame::cGame() {}
 cGame::~cGame(){}
@@ -98,7 +99,7 @@ bool cGame::LoopProcess()
 
 		case STATE_GAME:
 						ProcessOrder();
-						Critter.Move();
+						//Critter.Move();
 						break;
 	}
 	return true;
@@ -114,22 +115,76 @@ bool cGame::LoopOutput()
 bool cGame::Render()
 {
 	bool res;
-	res = Graphics.Render(state,Input.GetMouse(),&Scene,&Critter,&Skeleton);
+	res = Graphics.Render(state,Input.GetMouse(),&Scene,&Critter,&Skeleton, &Bullet);
 	return res;
 }
 
 void cGame::ProcessOrder()
 {
-	cMouse *Mouse;
+	//cMouse *Mouse;
+	cKeyboard *Keyboard;
 	int mx,my,msx,msy,p,cx,cy,x,y;
 	int s=5; //marge for directional pointers
 	int xo,xf,yo,yf;
-	int b4pointer;
+	//int b4pointer;
+	bool KeyPushed = false;
 
-	Mouse = Input.GetMouse();
-	b4pointer = Mouse->GetPointer();
-	Mouse->GetPosition(&mx,&my);
+	//Mouse = Input.GetMouse();
+	Keyboard = Input.GetKeyboard();
+	//b4pointer = Mouse->GetPointer();
+	//Mouse->GetPosition(&mx,&my);
 
+	if	   (Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_D)) Critter.MoveKey(NE,&Scene);
+	else if(Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_A)) Critter.MoveKey(NO,&Scene);
+	else if(Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_D)) Critter.MoveKey(NE,&Scene);
+	else if(Keyboard->KeyDown(DIK_S)&&Keyboard->KeyDown(DIK_A)) Critter.MoveKey(SO,&Scene);
+	else if(Keyboard->KeyDown(DIK_S)&&Keyboard->KeyDown(DIK_D)) Critter.MoveKey(SE,&Scene);
+	else if(Keyboard->KeyDown(DIK_W)) Critter.MoveKey(N,&Scene);
+	else if(Keyboard->KeyDown(DIK_S)) Critter.MoveKey(S,&Scene);
+	else if(Keyboard->KeyDown(DIK_D)) Critter.MoveKey(E,&Scene);
+	else if(Keyboard->KeyDown(DIK_A)) Critter.MoveKey(O,&Scene);
+	else {Critter.MoveKey(STOP,&Scene);} 
+
+	if(Scene.isMoving)
+	{
+		Scene.MoveMap(Scene.moveDir);
+	}
+	else
+	{
+		switch(Scene.map[int((Critter.x+16)/32)][int((Critter.y+16)/32)])
+		{
+			case 4: Scene.MoveMap(Norte); break;
+			case 5: Scene.MoveMap(Sur); break;
+			case 6: Scene.MoveMap(Oeste); break;
+			case 7: Scene.MoveMap(Este); break;
+		}
+	}
+	
+	if(Keyboard->KeyDown(DIK_RCONTROL) && Bullet.isReadyToShoot())
+	{
+		int posx, posy;
+		int dir, angulo=0;
+		Critter.GetPosition(&posx,&posy);
+
+		switch(Critter.CritterDir)
+		{
+			case N: angulo = 90; break;
+			case S: angulo = 270; break;
+			case O: angulo = 180; break;
+			case E: angulo = 0; break;
+			case NO: angulo = 135; break;
+			case NE: angulo = 45; break;
+			case SO: angulo = 225; break;
+			case SE: angulo = 315; break;
+		
+		}
+		Bullet.NewBullet(0,posx, posy, angulo, false, 0);
+	}
+
+	Bullet.UpdateBullets(&Scene);
+
+	// Critter.SetPosition(x,y);
+	/*
 	if(Mouse->ButtonDown(LEFT))
 	{
 		Mouse->SetPointer(NORMAL);
@@ -249,4 +304,8 @@ void cGame::ProcessOrder()
 	}
 
 	if(b4pointer!=Mouse->GetPointer()) Mouse->InitAnim();
+	*/
+}
+
+void cGame::Shoot(){
 }

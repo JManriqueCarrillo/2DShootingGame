@@ -103,10 +103,18 @@ void cGraphicsLayer::LoadData()
 	D3DXCreateTextureFromFileEx(g_pD3DDevice,"characters.png",0,0,1,0,D3DFMT_UNKNOWN,
 								D3DPOOL_DEFAULT,D3DX_FILTER_NONE,D3DX_FILTER_NONE,
 								0x00ff00ff,NULL,NULL,&texCharacters);
+	//Bullets
+	D3DXCreateTextureFromFileEx(g_pD3DDevice,"Proyectil.png",0,0,1,0,D3DFMT_UNKNOWN,
+								D3DPOOL_DEFAULT,D3DX_FILTER_NONE,D3DX_FILTER_NONE,
+								0x00ff00ff,NULL,NULL,&texBullet);
 	//Mouse pointers
 	D3DXCreateTextureFromFileEx(g_pD3DDevice,"mouse.png",0,0,1,0,D3DFMT_UNKNOWN,
 								D3DPOOL_DEFAULT,D3DX_FILTER_NONE,D3DX_FILTER_NONE,
 								0x00ff00ff,NULL,NULL,&texMouse);
+	//Tileset
+	D3DXCreateTextureFromFileEx(g_pD3DDevice,"army.png",0,0,1,0,D3DFMT_UNKNOWN,
+								D3DPOOL_DEFAULT,D3DX_FILTER_NONE,D3DX_FILTER_NONE,
+								0x00ff00ff,NULL,NULL,&texTileset);
 }
 
 void cGraphicsLayer::UnLoadData()
@@ -126,10 +134,20 @@ void cGraphicsLayer::UnLoadData()
 		texTiles->Release();
 		texTiles = NULL;
 	}
+	if(texTileset)
+	{
+		texTileset->Release();
+		texTileset = NULL;
+	}
 	if(texCharacters)
 	{
 		texCharacters->Release();
 		texCharacters = NULL;
+	}
+	if(texBullet)
+	{
+		texBullet->Release();
+		texBullet = NULL;
 	}
 	if(texMouse)
 	{
@@ -143,7 +161,7 @@ void cGraphicsLayer::UnLoadData()
 	}
 }
 
-bool cGraphicsLayer::Render(int state,cMouse *Mouse,cScene *Scene,cCritter *Critter,cSkeleton *Skeleton)
+bool cGraphicsLayer::Render(int state,cMouse *Mouse,cScene *Scene,cCritter *Critter,cSkeleton *Skeleton,cBullet *Bullet)
 {
 	//HRESULT Draw( LPDIRECT3DTEXTURE9 pTexture, CONST RECT *pSrcRect,
 	//				CONST D3DXVECTOR3 *pCenter,  CONST D3DXVECTOR3 *pPosition,
@@ -159,19 +177,21 @@ bool cGraphicsLayer::Render(int state,cMouse *Mouse,cScene *Scene,cCritter *Crit
 			{
 				case STATE_MAIN:
 								g_pSprite->Draw(texMain,NULL,NULL,&D3DXVECTOR3(0.0f,0.0f,0.0f),0xFFFFFFFF);
+								DrawMouse(Mouse);
 								break;
 
 				case STATE_GAME:
 								//Graphic User Interface
-								g_pSprite->Draw(texGame,NULL,NULL,&D3DXVECTOR3(0.0f,0.0f,0.0f),0xFFFFFFFF);
+								//g_pSprite->Draw(texGame,NULL,NULL,&D3DXVECTOR3(0.0f,0.0f,0.0f),0xFFFFFFFF);
 								DrawScene(Scene);
 								DrawUnits(Scene,Critter,Skeleton);
+								DrawBullets(Bullet);
 								break;
 			}
 
 		g_pSprite->End();
 
-		DrawMouse(Mouse);
+		
 
 	g_pD3DDevice->EndScene();
 	g_pD3DDevice->Present( NULL, NULL, NULL, NULL );
@@ -179,15 +199,28 @@ bool cGraphicsLayer::Render(int state,cMouse *Mouse,cScene *Scene,cCritter *Crit
 	return true;
 }
 
+void cGraphicsLayer::GetSceneRect(RECT *rc, int n)
+{
+	switch(n)
+	{
+		case 0: SetRect(rc,32,32*3,32*2,32*4); break;
+		case 1: SetRect(rc,32*6,32*0,32*7,32*1); break;
+		case 2: SetRect(rc,32*0,32*0,32*1,32*1); break;
+		case 3: SetRect(rc,32*0,32*6,32*1,32*7); break;
+		case 4: SetRect(rc,32*6,32*7,32*7,32*8); break;
+		default: SetRect(rc,32*0,32*0,32*1,32*1); break;
+	}
+}
+
 bool cGraphicsLayer::DrawScene(cScene *Scene)
 {
 	RECT rc;
-	int x,y,n,
+	int x,y,n,n2,
 		fx,fy,
 		pantx,panty;
 
 	//Tile based map
-	fx=Scene->cx+SCENE_WIDTH;
+	/*fx=Scene->cx+SCENE_WIDTH;
 	fy=Scene->cy+SCENE_HEIGHT;
 
 	for(y=Scene->cy;y<fy;y++)
@@ -203,6 +236,40 @@ bool cGraphicsLayer::DrawScene(cScene *Scene)
 			g_pSprite->Draw(texTiles,&rc,NULL, 
 							&D3DXVECTOR3(float(pantx),float(panty),0.0f), 
 							0xFFFFFFFF);
+		}
+	}*/
+
+	fx = SCENE_WIDTH;
+	fy = SCENE_HEIGHT;
+	for(y=0;y<fy;y++)
+	{
+		for(x=0;x<fx;x++)
+		{
+			n = Scene->map[x][y];
+			GetSceneRect(&rc,n);
+
+			if(Scene->isMoving)
+			{
+				int offsetx = 0, offsety = 0, offsetWIDTH = 0, offsetHEIGHT = 0;
+				Scene->getMoveMapOffsets(&offsetx,&offsety,&offsetWIDTH,&offsetHEIGHT);
+
+				g_pSprite->Draw(texTileset,&rc,NULL, 
+								&D3DXVECTOR3(float(x*32 + offsetx*32 + offsetWIDTH*32),float(y*32 + offsety*32 + offsetHEIGHT*32),0.0f), 
+								0xFFFFFFFF);
+
+				n2 = Scene->auxMap[x][y];
+				GetSceneRect(&rc,n2);
+
+				g_pSprite->Draw(texTileset,&rc,NULL, 
+								&D3DXVECTOR3(float(x*32 + offsetx*32),float(y*32 + offsety*32),0.0f), 
+								0xFFFFFFFF);
+			}
+			else
+			{
+				g_pSprite->Draw(texTileset,&rc,NULL, 
+								&D3DXVECTOR3(float(x*32),float(y*32),0.0f), 
+								0xFFFFFFFF);
+			}
 		}
 	}
 
@@ -225,10 +292,20 @@ bool cGraphicsLayer::DrawUnits(cScene *Scene,cCritter *Critter,cSkeleton *Skelet
 	Critter->GetCell(&cx,&cy);
 	if(Scene->Visible(cx,cy))
 	{
+		float offsetx = 0, offsety = 0;
+		if(Scene->isMoving)
+		{
+			Scene->getMovePlayerOffsets(&offsetx,&offsety);
+			Critter->GetPosition(&posx,&posy);
+			Critter->SetPosition(posx + (offsetx*32), posy + (offsety*32));
+		}
+
 		Critter->GetRect(&rc,&posx,&posy,Scene);
 		g_pSprite->Draw(texCharacters,&rc,NULL, 
 						&D3DXVECTOR3(float(posx),float(posy),0.0f), 
 						0xFFFFFFFF);
+
+
 		if(Critter->GetSelected())
 		{
 			Critter->GetRectLife(&rc,&posx,&posy,Scene);
@@ -250,10 +327,17 @@ bool cGraphicsLayer::DrawUnits(cScene *Scene,cCritter *Critter,cSkeleton *Skelet
 						&D3DXVECTOR3(float(posx),float(posy),0.0f), 
 						0xFFFFFFFF);
 	}
-	Skeleton->GetRectRadar(&rc,&posx,&posy);
-	g_pSprite->Draw(texTiles,&rc,NULL, 
-					&D3DXVECTOR3(float(posx),float(posy),0.0f), 
+		Skeleton->GetRectRadar(&rc,&posx,&posy);
+		
+
+		
+
+		g_pSprite->Draw(texTiles,&rc,NULL, 
+					&D3DXVECTOR3(float(posx),float(posy),0.0f)
+					, 
 					0xFFFFFFFF);
+		
+
 	//Draw Fire
 	if(Critter->GetShooting())
 	{
@@ -261,16 +345,54 @@ bool cGraphicsLayer::DrawUnits(cScene *Scene,cCritter *Critter,cSkeleton *Skelet
 		{
 			//Advance animation & draw
 			Critter->GetRectShoot(&rc,&posx,&posy,Scene);
+						
 			g_pSprite->Draw(texCharacters,&rc,NULL, 
 							&D3DXVECTOR3(float(posx),float(posy),0.0f), 
 							0xFFFFFFFF);
-		}
+					}
 		else
 		{
 			//Advance animation
 			Critter->GetRectShoot(&rc,&posx,&posy,Scene);
 		}
 	}
+	return true;
+}
+
+bool cGraphicsLayer::DrawBullets(cBullet *Bullet)
+{
+	float angulo,x,y;
+	int id;
+	RECT rc;
+	D3DXMATRIX matRotate;
+	D3DXVECTOR2 vCenter(16.0f,16.0f);
+	D3DXVECTOR2 vPosition(0, 0);
+
+	std::list<BulletStruct>::iterator illista;
+	illista = Bullet->listaBullets.begin();
+	while( illista != Bullet->listaBullets.end() )
+	{
+		angulo = illista->angulo;
+		x = illista->x;
+		y = illista->y;
+		id = illista->id;
+		vPosition.x = x + Bullet->cosdeg(angulo) * 16;
+		vPosition.y = y - Bullet->sindeg(angulo) * 16;
+
+		D3DXMatrixTransformation2D(&matRotate, NULL, NULL, NULL, &vCenter,-PI/180*angulo , &vPosition);
+		g_pSprite->SetTransform(&matRotate);
+
+		SetRect(&rc,0,0,32,32);
+		g_pSprite->Draw(texBullet,&rc,NULL, 
+				NULL,//&D3DXVECTOR3(float(x),float(y),0.0f), 
+				0xFFFFFFFF);
+
+		D3DXMatrixRotationZ(&matRotate, 0);
+		g_pSprite->SetTransform(&matRotate);
+
+		illista++;
+	}
+
 	return true;
 }
 

@@ -4,6 +4,7 @@
 
 #include <windows.h>
 #include "cTrajectory.h"
+#include "cLog.h"
 
 class cScene;
 
@@ -16,6 +17,8 @@ public:
 	void GoToCell(int destcx,int destcy);
 	void GoToEnemy(int destcx,int destcy);
 	void Move();
+	void MoveKey(int dir, cScene *Scene);
+	void Fire();
 	void GetRect(RECT *rc,int *posx,int *posy,cScene *Scene);
 	void GetRectLife(RECT *rc,int *posx,int *posy,cScene *Scene);
 	void GetRectShoot(RECT *rc,int *posx,int *posy,cScene *Scene);
@@ -29,8 +32,11 @@ public:
 	bool GetSelected();
 	bool GetShooting();
 	bool IsFiring();
+	bool GetCollision(int *dir);
 
-private:
+
+	
+
 	int x,y;		//Position in total map
 	int cx,cy;		//Cell position in total map
 	bool selected;	//Selected for move or attack
@@ -39,6 +45,8 @@ private:
 
 	int seq;		//Sequence animation control
 	int delay;		//Animation delay
+	int CritterDir; //Criter facing direction
+	bool isMoving;
 
 	bool attack;	//Order to attack established (moving for attack)
 	bool shoot;		//Begin attack (to shoot)

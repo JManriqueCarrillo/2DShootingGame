@@ -8,3 +8,7 @@ Debug/
 UpgradeLog.XML
 _UpgradeReport_Files/
 log.txt
+*.sdf
+*.rc
+*.sln
+*.suo

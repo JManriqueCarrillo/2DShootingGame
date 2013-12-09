@@ -12,7 +12,7 @@ public:
 
 	bool KeyDown(int key) { return (m_keys[key] & 0x80) ? true : false; }
 	bool KeyUp(int key) { return (m_keys[key] & 0x80) ? false : true; }
-
+	
 	bool Read();
 	void Clear() { ZeroMemory(m_keys, 256 * sizeof(char)); }
 	

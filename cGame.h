@@ -29,11 +29,13 @@ private:
 	cScene Scene;
 	cCritter Critter;
 	cSkeleton Skeleton;
+	cBullet Bullet;
 	
 	int state;
 
 	void ProcessOrder();
 	bool Render();
+	void Shoot();
 };
 
 #endif

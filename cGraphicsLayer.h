@@ -2,7 +2,6 @@
 #ifndef __GRAPHICSLAYER_H__
 #define __GRAPHICSLAYER_H__
 
-
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"d3d9.lib")
 #pragma comment(lib,"d3dx9.lib")
@@ -15,6 +14,9 @@
 #include "cMouse.h"
 #include "cCritter.h"
 #include "cSkeleton.h"
+#include "cBullet.h"
+
+#define PI 3.141592
 
 class cGraphicsLayer  
 {
@@ -29,21 +31,25 @@ public:
 	
 	void LoadData();
 	void UnLoadData();
-	bool Render(int state,cMouse *Mouse,cScene *Scene,cCritter *Critter,cSkeleton *Skeleton);
+	bool Render(int state,cMouse *Mouse,cScene *Scene,cCritter *Critter,cSkeleton *Skeleton, cBullet *Bullet);
 
 	bool DrawScene(cScene *Scene);
 	bool DrawUnits(cScene *Scene,cCritter *Critter,cSkeleton *Skeleton);
+	bool DrawBullets(cBullet *Bullet);
 	bool DrawMouse(cMouse *Mouse);
 	bool DrawRect(RECT rc, D3DCOLOR color);
 
 private:
+
+	void GetSceneRect(RECT *rc, int n);
 
 	LPDIRECT3D9 g_pD3D;
 	LPDIRECT3DDEVICE9 g_pD3DDevice;
 	LPD3DXSPRITE g_pSprite;
 
 	LPDIRECT3DTEXTURE9 texMain,texGame;
-	LPDIRECT3DTEXTURE9 texTiles,texCharacters,texMouse;
+	LPDIRECT3DTEXTURE9 texTiles,texCharacters,texMouse,texTileset,texBullet;
+
 };
 
 
