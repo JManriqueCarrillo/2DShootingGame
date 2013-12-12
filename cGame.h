@@ -4,6 +4,7 @@
 
 #include "cGraphicsLayer.h"
 #include "cInputLayer.h"
+#include "cController.h"
 #include "cScene.h"
 
 #define STATE_MAIN	0
@@ -26,6 +27,7 @@ private:
 
 	cGraphicsLayer Graphics;
 	cInputLayer Input;
+	cController Controller;
 	cScene Scene;
 	cCritter Critter;
 	cSkeleton Skeleton;

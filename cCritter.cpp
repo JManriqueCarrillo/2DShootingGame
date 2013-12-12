@@ -25,6 +25,11 @@ cCritter::~cCritter()
 	
 }
 
+float cCritter::arctandeg(float valor)
+{
+	return (atan (valor) * 180) / 3.14159265;
+}
+
 void cCritter::GetRect(RECT *rc,int *posx,int *posy,cScene *Scene)
 {
 	*posx = SCENE_Xo + x - (Scene->cx<<5);
@@ -126,9 +131,10 @@ void cCritter::GoToEnemy(int destcx,int destcy)
 	attack=true;
 	shoot=false;
 }
-void cCritter::Move()
+
+void cCritter::Move(int auxx, int auxy, int dir, cScene *Scene)
 {
-	int mov;
+	/*int mov;
 
 	if(!Trajectory.IsDone())
 	{
@@ -153,7 +159,58 @@ void cCritter::Move()
 			shoot_delay=0;
 			attack=false;
 		}
-	}
+	}*/
+
+	if(	Scene->isWalkable(int(auxx/32), int(y/32)) && Scene->isWalkable(int(auxx/32)+1, int(y/32)) && Scene->isWalkable(int(auxx/32), int(y/32)+1) && Scene->isWalkable(int(auxx/32)+1, int(y/32)+1) ) 	x = auxx;
+	if(	Scene->isWalkable(int(x/32), int(auxy/32)) && Scene->isWalkable(int(x/32)+1, int(auxy/32)) && Scene->isWalkable(int(x/32), int(auxy/32)+1) && Scene->isWalkable(int(x/32)+1, int(auxy/32)+1) )	y = auxy;
+	
+	isMoving = true;
+	if((auxx == 0 && auxy == 0) || dir == STOP) isMoving = false;
+	else										CritterDir = dir;
+
+	cx = int((x+16)/32);
+	cy = int((y+16)/32);
+}
+
+void cCritter::MoveController(float controllerx, float controllery, cScene *Scene)
+{
+	int auxx, auxy;
+	int dir = 0;
+
+	auxx = x;
+	auxy = y;
+
+	int incremento = 5;
+
+	auxx += incremento * controllerx;
+	auxy += incremento * controllery;
+
+	/*float angle = arctandeg(-controllery/controllerx);
+	if((angle < 22.5 && angle > -22.5) || angle > 337,5) dir = E;
+	if(angle > 45-22.5 && angle < 45+22.5) dir = NE;
+	if(angle > 90-22.5 && angle < 90+22.5) dir = N;
+	if(angle > 135-22.5 && angle < 135+22.5) dir = NO;
+	if(angle > 180-22.5 && angle < 180+22.5) dir = O;
+	if(angle > 225-22.5 && angle < 225+22.5) dir = SO;
+	if(angle > 270-22.5 && angle < 270+22.5) dir = S;
+	if(angle > 315-22.5 && angle < 315+22.5) dir = SE;*/
+
+	int xx = 0, yy = 0;
+
+	if (controllerx >= 0)
+            xx += 1;
+    if (controllerx < 0)
+            xx -= 1;
+    if (controllery >= 0)
+            yy += 1;
+    if (controllery < 0)
+            yy -= 1;
+
+    int index = (xx + 1) * 3 + (yy + 1);
+    int angles[] = {NO, N, NE, O, -1, E, SO, S, SE};
+    dir = angles[index];
+
+	Move(auxx,auxy,dir,Scene);
 }
 
 void cCritter::MoveKey(int dir, cScene *Scene)
@@ -179,7 +236,9 @@ void cCritter::MoveKey(int dir, cScene *Scene)
 		case STOP: break; //Does fucking nothing!!!
 	}
 
-	if(	Scene->isWalkable(int(auxx/32), int(y/32)) && Scene->isWalkable(int(auxx/32)+1, int(y/32)) && Scene->isWalkable(int(auxx/32), int(y/32)+1) && Scene->isWalkable(int(auxx/32)+1, int(y/32)+1) ) 	x = auxx;
+	Move(auxx,auxy,dir,Scene);
+
+	/*if(	Scene->isWalkable(int(auxx/32), int(y/32)) && Scene->isWalkable(int(auxx/32)+1, int(y/32)) && Scene->isWalkable(int(auxx/32), int(y/32)+1) && Scene->isWalkable(int(auxx/32)+1, int(y/32)+1) ) 	x = auxx;
 	if(	Scene->isWalkable(int(x/32), int(auxy/32)) && Scene->isWalkable(int(x/32)+1, int(auxy/32)) && Scene->isWalkable(int(x/32), int(auxy/32)+1) && Scene->isWalkable(int(x/32)+1, int(auxy/32)+1) )	y = auxy;
 	
 	isMoving = true;
@@ -187,7 +246,7 @@ void cCritter::MoveKey(int dir, cScene *Scene)
 	else			CritterDir = dir;
 
 	cx = int(x/32);
-	cy = int(y/32);
+	cy = int(y/32);*/
 
 	/*if (!GetCollision(&dir))
 	if(!isCollidingMap(

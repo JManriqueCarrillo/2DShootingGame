@@ -71,6 +71,8 @@ bool cGame::LoopInput()
 		Log->Msg("Error reading Input!");
 		return false;
 	}
+
+	res = Controller.Read();
 	return true;
 }
 
@@ -138,6 +140,9 @@ void cGame::ProcessOrder()
 	//b4pointer = Mouse->GetPointer();
 	//Mouse->GetPosition(&mx,&my);
 
+	float xcont = Controller.getLeftStickX(0);
+	float ycont = Controller.getLeftStickY(0);
+
 	if	   (Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_D)) Critter.MoveKey(NE,&Scene);
 	else if(Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_A)) Critter.MoveKey(NO,&Scene);
 	else if(Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_D)) Critter.MoveKey(NE,&Scene);
@@ -147,6 +152,7 @@ void cGame::ProcessOrder()
 	else if(Keyboard->KeyDown(DIK_S)) Critter.MoveKey(S,&Scene);
 	else if(Keyboard->KeyDown(DIK_D)) Critter.MoveKey(E,&Scene);
 	else if(Keyboard->KeyDown(DIK_A)) Critter.MoveKey(O,&Scene);
+	else if(xcont!= 0 && ycont!=0) Critter.MoveController(xcont,-ycont,&Scene); // Controller movement
 	else {Critter.MoveKey(STOP,&Scene);} 
 
 	if(Scene.isMoving)
@@ -164,7 +170,7 @@ void cGame::ProcessOrder()
 		}
 	}
 	
-	if(Keyboard->KeyDown(DIK_RCONTROL) && Bullet.isReadyToShoot())
+	if((Keyboard->KeyDown(DIK_RCONTROL) || Controller.buttonDown(0, XINPUT_GAMEPAD_X)) && Bullet.isReadyToShoot())
 	{
 		int posx, posy;
 		int dir, angulo=0;

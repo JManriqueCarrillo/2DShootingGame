@@ -3,6 +3,7 @@
 #define __CRITTER_H__
 
 #include <windows.h>
+#include <math.h>
 #include "cTrajectory.h"
 #include "cLog.h"
 
@@ -14,10 +15,16 @@ public:
 	cCritter(void);
 	virtual ~cCritter(void);
 
+	float cCritter::arctandeg(float valor);
+
+
 	void GoToCell(int destcx,int destcy);
 	void GoToEnemy(int destcx,int destcy);
-	void Move();
+	void Move(int auxx, int auxy, int dir, cScene *Scene);
 	void MoveKey(int dir, cScene *Scene);
+
+	void MoveController(float controllerx, float controllery, cScene *Scene);
+
 	void Fire();
 	void GetRect(RECT *rc,int *posx,int *posy,cScene *Scene);
 	void GetRectLife(RECT *rc,int *posx,int *posy,cScene *Scene);
