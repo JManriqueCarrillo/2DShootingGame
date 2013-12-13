@@ -45,13 +45,13 @@ private:
 	cBullet Bullet;
 	
 	int state;
-
+	
 	std::list<EnemyStruct> listaEnemigos;
 
 	void ProcessOrder();
 	bool Render();
 	void Shoot();
-
+	
 	void bulletsCollision();
 };
 

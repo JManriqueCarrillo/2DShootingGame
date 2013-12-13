@@ -56,6 +56,8 @@ public:
 	bool isMoving;
 	int moveDir;
 	int moveCounter;
+
+	char logtext[100];
 };
 
 #endif

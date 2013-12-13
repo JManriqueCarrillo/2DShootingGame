@@ -66,7 +66,33 @@ bool cGraphicsLayer::Init(HWND hWnd)
 		return false;
 	}
 
+	//Init font
+	InitD3D();
+
 	return true;
+}
+
+// [ DirectX9 Initialization ]
+HRESULT cGraphicsLayer::InitD3D(void) {
+	return D3DXCreateFont(g_pD3DDevice,     //D3D Device
+                20,                                                             //Font height
+                0,                                                              //Font width
+                FW_NORMAL,                                              //Font Weight
+                1,                                                              //MipLevels
+                false,                                                  //Italic
+                DEFAULT_CHARSET,                                //CharSet
+                OUT_DEFAULT_PRECIS,                             //OutputPrecision
+                DEFAULT_QUALITY,                                //Quality
+                DEFAULT_PITCH|FF_DONTCARE,              //PitchAndFamily
+                "Arial",                                                //pFacename,
+                &g_font);                                               //ppFont
+}
+
+//Drawing Function:
+void cGraphicsLayer::DrawString(int x, int y, COLORREF color, ID3DXFont *pFont, const char *fmt, ...)
+{
+        RECT FontPos = { x, y, x + 800, y + 16 };
+        pFont->DrawText(NULL, fmt, -1, &FontPos, DT_TOP, color);
 }
 
 void cGraphicsLayer::Finalize()
@@ -189,6 +215,12 @@ bool cGraphicsLayer::Render(int state,cMouse *Mouse,cScene *Scene,cCritter *Crit
 								break;
 			}
 
+			
+
+		g_pSprite->End();
+
+		g_pSprite->Begin(D3DXSPRITE_ALPHABLEND);
+		DrawString(5,5,D3DCOLOR_ARGB(255,255, 255, 0), g_font, Scene->logtext);
 		g_pSprite->End();
 
 		

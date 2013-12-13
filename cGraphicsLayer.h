@@ -20,7 +20,6 @@
 
 class cGraphicsLayer  
 {
-
 public:
 	
 	cGraphicsLayer();
@@ -41,6 +40,9 @@ public:
 
 private:
 
+	HRESULT InitD3D(void);
+	void DrawString(int x, int y, COLORREF color, ID3DXFont *pFont, const char *fmt, ...);
+
 	void GetSceneRect(RECT *rc, int n);
 
 	LPDIRECT3D9 g_pD3D;
@@ -50,6 +52,8 @@ private:
 	LPDIRECT3DTEXTURE9 texMain,texGame;
 	LPDIRECT3DTEXTURE9 texTiles,texCharacters,texMouse,texTileset,texBullet;
 
+	// [ DX9 Variables ]
+	LPD3DXFONT g_font;
 };
 
 

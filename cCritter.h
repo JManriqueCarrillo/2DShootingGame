@@ -4,6 +4,7 @@
 
 #include <windows.h>
 #include <math.h>
+#include <stdio.h>
 #include "cTrajectory.h"
 #include "cLog.h"
 

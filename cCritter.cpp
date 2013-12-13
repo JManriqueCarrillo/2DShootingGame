@@ -185,30 +185,27 @@ void cCritter::MoveController(float controllerx, float controllery, cScene *Scen
 	auxx += incremento * controllerx;
 	auxy += incremento * controllery;
 
-	/*float angle = arctandeg(-controllery/controllerx);
-	if((angle < 22.5 && angle > -22.5) || angle > 337,5) dir = E;
-	if(angle > 45-22.5 && angle < 45+22.5) dir = NE;
-	if(angle > 90-22.5 && angle < 90+22.5) dir = N;
-	if(angle > 135-22.5 && angle < 135+22.5) dir = NO;
-	if(angle > 180-22.5 && angle < 180+22.5) dir = O;
-	if(angle > 225-22.5 && angle < 225+22.5) dir = SO;
-	if(angle > 270-22.5 && angle < 270+22.5) dir = S;
-	if(angle > 315-22.5 && angle < 315+22.5) dir = SE;*/
+	float angle = arctandeg(-controllery/controllerx);
 
-	int xx = 0, yy = 0;
+	if(controllerx >= 0)
+	{
+		if(angle > -45-22.5 && angle < -45+22.5) dir = SE;
+		if(angle < 22.5 && angle > -22.5) dir = E;
+		if(angle > 45-22.5 && angle < 45+22.5) dir = NE;
+		if(angle > 90-22.5) dir = N;
+		if(angle < -90+22.5) dir = S;
+	}
+	else
+	{
+		if(angle > -45-22.5 && angle < -45+22.5) dir = NO;
+		if(angle < 22.5 && angle > -22.5) dir = O;
+		if(angle > 45-22.5 && angle < 45+22.5) dir = SO;
+		if(angle > 90-22.5) dir = S;
+		if(angle < -90+22.5) dir = N;
+	}
 
-	if (controllerx >= 0)
-            xx += 1;
-    if (controllerx < 0)
-            xx -= 1;
-    if (controllery >= 0)
-            yy += 1;
-    if (controllery < 0)
-            yy -= 1;
-
-    int index = (xx + 1) * 3 + (yy + 1);
-    int angles[] = {NO, N, NE, O, -1, E, SO, S, SE};
-    dir = angles[index];
+	//
+	sprintf(Scene->logtext,"cCritter::MoveController() angulo: %f",angle);
 
 	Move(auxx,auxy,dir,Scene);
 }

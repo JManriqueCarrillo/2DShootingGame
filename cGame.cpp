@@ -1,7 +1,7 @@
 
 #include "cGame.h"
 #include "cLog.h"
-#include "cKeyboard.h";
+#include "cKeyboard.h"
 #include <list>
 
 cGame::cGame() {}
@@ -36,6 +36,7 @@ bool cGame::Init(HWND hWnd,HINSTANCE hInst,bool exclusive)
 
 void cGame::Finalize()
 {
+
 	Graphics.UnLoadData();
 	Graphics.Finalize();
 	Input.UnacquireAll();
@@ -153,7 +154,7 @@ void cGame::ProcessOrder()
 	else if(Keyboard->KeyDown(DIK_S)) Critter.MoveKey(S,&Scene);
 	else if(Keyboard->KeyDown(DIK_D)) Critter.MoveKey(E,&Scene);
 	else if(Keyboard->KeyDown(DIK_A)) Critter.MoveKey(O,&Scene);
-	else if(xcont!= 0 && ycont!=0) Critter.MoveController(xcont,-ycont,&Scene); // Controller movement
+	else if(xcont!= 0 || ycont!=0) Critter.MoveController(xcont,-ycont,&Scene); // Controller movement
 	else {Critter.MoveKey(STOP,&Scene);} 
 
 	if(Scene.isMoving)
@@ -189,11 +190,11 @@ void cGame::ProcessOrder()
 			case SE: angulo = 315; break;
 		
 		}
-		Bullet.NewBullet(0,posx, posy, angulo, false, 0,10);
+		Bullet.NewBullet(0,posx, posy, angulo, false, 0, 10);
 	}
 
 	bulletsCollision();
-
+	
 	Bullet.UpdateBullets(&Scene);
 
 	/**
@@ -329,7 +330,7 @@ void cGame::ProcessOrder()
 
 void cGame::bulletsCollision(){
 	/*
-	Modificará la lista de bullets i de los enemigos y Critter añadiendo un flag "colision" por si ha colisionado con ellos
+	Modificar? la lista de bullets i de los enemigos y Critter a?adiendo un flag "colision" por si ha colisionado con ellos
 	*/
 	int headx, heady;
 
@@ -364,9 +365,12 @@ void cGame::bulletsCollision(){
 		} 
 		else 
 		{
-			illista->destroying = true;;
+			illista->destroying = true;
 		}
 		illista++;
 	}
-	
+}
+
+
+void cGame::Shoot(){
 }
