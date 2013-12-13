@@ -2,6 +2,7 @@
 #include "cGame.h"
 #include "cLog.h"
 #include "cKeyboard.h";
+#include <list>
 
 cGame::cGame() {}
 cGame::~cGame(){}
@@ -71,8 +72,6 @@ bool cGame::LoopInput()
 		Log->Msg("Error reading Input!");
 		return false;
 	}
-
-	res = Controller.Read();
 	return true;
 }
 
@@ -140,9 +139,6 @@ void cGame::ProcessOrder()
 	//b4pointer = Mouse->GetPointer();
 	//Mouse->GetPosition(&mx,&my);
 
-	float xcont = Controller.getLeftStickX(0);
-	float ycont = Controller.getLeftStickY(0);
-
 	if	   (Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_D)) Critter.MoveKey(NE,&Scene);
 	else if(Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_A)) Critter.MoveKey(NO,&Scene);
 	else if(Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_D)) Critter.MoveKey(NE,&Scene);
@@ -152,7 +148,6 @@ void cGame::ProcessOrder()
 	else if(Keyboard->KeyDown(DIK_S)) Critter.MoveKey(S,&Scene);
 	else if(Keyboard->KeyDown(DIK_D)) Critter.MoveKey(E,&Scene);
 	else if(Keyboard->KeyDown(DIK_A)) Critter.MoveKey(O,&Scene);
-	else if(xcont!= 0 && ycont!=0) Critter.MoveController(xcont,-ycont,&Scene); // Controller movement
 	else {Critter.MoveKey(STOP,&Scene);} 
 
 	if(Scene.isMoving)
@@ -170,7 +165,7 @@ void cGame::ProcessOrder()
 		}
 	}
 	
-	if((Keyboard->KeyDown(DIK_RCONTROL) || Controller.buttonDown(0, XINPUT_GAMEPAD_X)) && Bullet.isReadyToShoot())
+	if(Keyboard->KeyDown(DIK_RCONTROL) && Bullet.isReadyToShoot())
 	{
 		int posx, posy;
 		int dir, angulo=0;
@@ -188,8 +183,10 @@ void cGame::ProcessOrder()
 			case SE: angulo = 315; break;
 		
 		}
-		Bullet.NewBullet(0,posx, posy, angulo, false, 0);
+		Bullet.NewBullet(0,posx, posy, angulo, false, 0,10);
 	}
+
+	bulletsCollision();
 
 	Bullet.UpdateBullets(&Scene);
 
@@ -324,5 +321,46 @@ void cGame::ProcessOrder()
 	*/
 }
 
-void cGame::Shoot(){
+void cGame::bulletsCollision(){
+	/*
+	Modificará la lista de bullets i de los enemigos y Critter añadiendo un flag "colision" por si ha colisionado con ellos
+	*/
+	int headx, heady;
+
+	std::list<EnemyStruct>::iterator enemlist;
+
+	
+	//Por cada bullet
+	std::list<BulletStruct>::iterator illista;
+	illista = Bullet.listaBullets.begin();
+	while( illista != Bullet.listaBullets.end() )
+	{
+		headx = illista->x + 32 + Bullet.cosdeg(illista->angulo) * illista->speed;
+		heady = illista->y + 16 + Bullet.sindeg(illista->angulo) * illista->speed;
+
+		//	Si no se ha salido de limites
+		if(Scene.isWalkable(int(headx/32), int(heady/32)))
+		{
+			//Por cada enemigo
+			enemlist = listaEnemigos.begin();
+			while( enemlist != listaEnemigos.end() )
+			{
+				//Comprovar colision
+				//Si colisionConEnemigo
+				if((headx > enemlist->x && headx < enemlist->x+32) && (heady > enemlist->y && heady < enemlist->y+32))
+				{
+					enemlist->impactado = true;
+					//quitarVida(EnemigoColisionado, Bullet.poder) //TODO
+					illista->destroying = true;
+				}
+				enemlist++;
+			}
+		} 
+		else 
+		{
+			illista->destroying = true;;
+		}
+		illista++;
+	}
+	
 }
