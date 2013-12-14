@@ -49,13 +49,27 @@ public:
 	bool isWalkable(int x, int y);
 	bool Visible(int cellx,int celly);
 
+	void OpenNextDoor();
+	void ClosePrevDoor();
+	void UpdateDoors();
+
 	int map[SCENE_WIDTH][SCENE_HEIGHT];
 	int auxMap[SCENE_WIDTH][SCENE_HEIGHT];
+	int doorMap[SCENE_WIDTH][SCENE_HEIGHT];
+	int walkMap[SCENE_WIDTH][SCENE_HEIGHT];
 	int * Pathmap;
 	int cx,cy;
 	bool isMoving;
 	int moveDir;
 	int moveCounter;
+
+	char logtext[100];
+
+	bool isDoorOpening;
+	bool isDoorOpen;
+	int doorOpenCounter;
+	bool isDoorClosing;
+	int doorCloseCounter;
 };
 
 #endif
