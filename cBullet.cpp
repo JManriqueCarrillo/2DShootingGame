@@ -25,10 +25,7 @@ void cBullet::NewBullet ( int id, float x, float y, float fAngulo, bool rebota, 
 	bullet.destroying = false;
 	bullet.animseq = 0;
 	bullet.destseq = 0;
-<<<<<<< HEAD
 	bullet.poder = 50;
-=======
->>>>>>> fa15a8af0eedc97f97cecd283c69c549a642decf
 	listaBullets.insert( listaBullets.end(), bullet );
 
 	delay = 0;

@@ -1,14 +1,11 @@
 
 #include "cGame.h"
 #include "cLog.h"
-<<<<<<< HEAD
 #include "cKeyboard.h"
 #include <list>
 #include <time.h>
-=======
 #include "cKeyboard.h";
 #include <list>
->>>>>>> fa15a8af0eedc97f97cecd283c69c549a642decf
 
 cGame::cGame() 
 {
@@ -20,7 +17,7 @@ cGame::cGame()
 	for (int i=0;i<EnemArray.numEnemies;i++)
 	{
 		newx = rand()%(SCENE_WIDTH-2)+1;
-		newy = rand()%(SCENE_HEIGHT-2)+1;
+		newy = rand()%(SCENE_HEIGHT-3)+1;
 		EnemArray.enemies[i].SetEnemy(i,newx,newy,100);
 	}
 
@@ -359,13 +356,7 @@ void cGame::bulletsCollision(){
 	Modificará la lista de bullets i de los enemigos y Critter añadiendo un flag "colision" por si ha colisionado con ellos
 	*/
 	int headx, heady;
-<<<<<<< HEAD
-=======
 
-	std::list<EnemyStruct>::iterator enemlist;
-
->>>>>>> fa15a8af0eedc97f97cecd283c69c549a642decf
-	
 	//Por cada bullet
 	std::list<BulletStruct>::iterator illista;
 	illista = Bullet.listaBullets.begin();
@@ -378,7 +369,6 @@ void cGame::bulletsCollision(){
 		if(Scene.isWalkable(int(headx/32), int(heady/32)))
 		{
 			//Por cada enemigo
-<<<<<<< HEAD
 			for (int i=0;i<EnemArray.numEnemies;i++)
 			{
 				//Comprovar colision
@@ -389,22 +379,9 @@ void cGame::bulletsCollision(){
 					//quitarVida(EnemigoColisionado, Bullet.poder) //TODO
 					illista->destroying = true;
 				}
-=======
-			enemlist = listaEnemigos.begin();
-			while( enemlist != listaEnemigos.end() )
-			{
-				//Comprovar colision
-				//Si colisionConEnemigo
-				if((headx > enemlist->x && headx < enemlist->x+32) && (heady > enemlist->y && heady < enemlist->y+32))
-				{
-					enemlist->impactado = true;
-					//quitarVida(EnemigoColisionado, Bullet.poder) //TODO
-					illista->destroying = true;
-				}
-				enemlist++;
->>>>>>> fa15a8af0eedc97f97cecd283c69c549a642decf
+
 			}
-		} 
+		}
 		else 
 		{
 			illista->destroying = true;;

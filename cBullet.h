@@ -1,4 +1,3 @@
-
 #ifndef __BULLET_H__
 #define __BULLET_H__
 
@@ -19,10 +18,7 @@ typedef struct
 	bool destroying;
 	int destseq;
 	int animseq;
-<<<<<<< HEAD
 	int poder;
-=======
->>>>>>> fa15a8af0eedc97f97cecd283c69c549a642decf
 }BulletStruct;
 
 class cBullet
