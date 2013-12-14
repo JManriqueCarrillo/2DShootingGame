@@ -161,7 +161,7 @@ void cGraphicsLayer::UnLoadData()
 	}
 }
 
-bool cGraphicsLayer::Render(int state,cMouse *Mouse,cScene *Scene,cCritter *Critter,cSkeleton *Skeleton,cBullet *Bullet)
+bool cGraphicsLayer::Render(int state,cMouse *Mouse,cScene *Scene,cCritter *Critter,sArray *enemArray,cBullet *Bullet)
 {
 	//HRESULT Draw( LPDIRECT3DTEXTURE9 pTexture, CONST RECT *pSrcRect,
 	//				CONST D3DXVECTOR3 *pCenter,  CONST D3DXVECTOR3 *pPosition,
@@ -184,7 +184,7 @@ bool cGraphicsLayer::Render(int state,cMouse *Mouse,cScene *Scene,cCritter *Crit
 								//Graphic User Interface
 								//g_pSprite->Draw(texGame,NULL,NULL,&D3DXVECTOR3(0.0f,0.0f,0.0f),0xFFFFFFFF);
 								DrawScene(Scene);
-								DrawUnits(Scene,Critter,Skeleton);
+								DrawUnits(Scene,Critter,enemArray);
 								DrawBullets(Bullet);
 								break;
 			}
@@ -283,7 +283,7 @@ bool cGraphicsLayer::DrawScene(cScene *Scene)
 	return true;
 }
 
-bool cGraphicsLayer::DrawUnits(cScene *Scene,cCritter *Critter,cSkeleton *Skeleton)
+bool cGraphicsLayer::DrawUnits(cScene *Scene,cCritter *Critter,sArray *enemArray)
 {
 	int cx,cy,posx,posy;
 	RECT rc;
@@ -318,16 +318,18 @@ bool cGraphicsLayer::DrawUnits(cScene *Scene,cCritter *Critter,cSkeleton *Skelet
 	g_pSprite->Draw(texTiles,&rc,NULL, 
 					&D3DXVECTOR3(float(posx),float(posy),0.0f), 
 					0xFFFFFFFF);
-	//Draw Skeleton
-	Skeleton->GetCell(&cx,&cy);
-	if(Scene->Visible(cx,cy))
+	//Draw Enemies
+	for (int i=0;i<enemArray->numEnemies;i++)
 	{
-		Skeleton->GetRect(&rc,&posx,&posy,Scene);
-		g_pSprite->Draw(texCharacters,&rc,NULL, 
+		enemArray->enemies[i].GetCell(&cx,&cy);
+		if(Scene->Visible(cx,cy))
+		{
+			enemArray->enemies[i].GetRect(&rc,&posx,&posy,Scene);
+			g_pSprite->Draw(texCharacters,&rc,NULL, 
 						&D3DXVECTOR3(float(posx),float(posy),0.0f), 
 						0xFFFFFFFF);
-	}
-		Skeleton->GetRectRadar(&rc,&posx,&posy);
+		}
+		enemArray->enemies[i].GetRectRadar(&rc,&posx,&posy);
 		
 
 		
@@ -337,7 +339,7 @@ bool cGraphicsLayer::DrawUnits(cScene *Scene,cCritter *Critter,cSkeleton *Skelet
 					, 
 					0xFFFFFFFF);
 		
-
+	}
 	//Draw Fire
 	if(Critter->GetShooting())
 	{

@@ -4,6 +4,7 @@
 
 #include <windows.h>
 #include "cPath.h"
+#include <list>
 
 class cScene;
 
@@ -12,6 +13,8 @@ class cSkeleton
 public:
 	cSkeleton(void);
 	virtual ~cSkeleton(void);
+
+	void cSkeleton::SetEnemy ( int id, int newx, int newy, int newhealth);
 
 	//Enemy Move
 	void GoToCell(int *map,int destpx,int destpy);
@@ -26,9 +29,19 @@ public:
 	void SetCell(int cellx,int celly);
 	void GetCell(int *cellx,int *celly);
 
-private:
+	void Impactar(int damage);
+
 	int x,y;		//Position in total map
 	int cx,cy;		//Cell position in total map
+	int id_enemy;
+
+private:
+
+	int health;
+	bool damaged;
+	bool dying;
+	int seq_die;
+	bool dead;
 
 	//AI of the enemy for the path
 	cPath Trajectory;

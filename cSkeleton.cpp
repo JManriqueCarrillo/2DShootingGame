@@ -2,17 +2,31 @@
 #include "cSkeleton.h"
 #include "cScene.h"
 #include "cLog.h"
-#include <stdio.h>;
+#include <stdio.h>
+#include <time.h>
 
 
 cSkeleton::cSkeleton()
 {
-	SetPosition(64,64);
-	SetCell(2,2);
+
 }
 cSkeleton::~cSkeleton()
 {
 
+}
+
+void cSkeleton::SetEnemy ( int id, int newx, int newy, int newhealth)
+{
+	id_enemy = id;
+	cx = newx;
+	cy = newy;
+	x = int(cx*32);
+	y = int(cy*32);
+	health = 100;
+	damaged = false;
+	dying = false;
+	seq_die = 0;
+	dead = false;
 }
 
 void cSkeleton::GetRect(RECT *rc,int *posx,int *posy,cScene *Scene)
@@ -102,4 +116,15 @@ void cSkeleton::GetCell(int *cellx,int *celly)
 {
 	*cellx = cx;
 	*celly = cy;
+}
+
+void cSkeleton::Impactar(int damage)
+{
+	if (health > 0)
+	{
+		damaged = true;
+		health -= damage;
+		if (health <= 0)	dying = true;
+	}
+
 }

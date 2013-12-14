@@ -1,10 +1,30 @@
 
 #include "cGame.h"
 #include "cLog.h"
+<<<<<<< HEAD
+#include "cKeyboard.h"
+#include <list>
+#include <time.h>
+=======
 #include "cKeyboard.h";
 #include <list>
+>>>>>>> fa15a8af0eedc97f97cecd283c69c549a642decf
 
-cGame::cGame() {}
+cGame::cGame() 
+{
+	int newx, newy;
+
+	srand(time(NULL));
+	
+	EnemArray.numEnemies = 3;
+	for (int i=0;i<EnemArray.numEnemies;i++)
+	{
+		newx = rand()%(SCENE_WIDTH-2)+1;
+		newy = rand()%(SCENE_HEIGHT-2)+1;
+		EnemArray.enemies[i].SetEnemy(i,newx,newy,100);
+	}
+
+}
 cGame::~cGame(){}
 
 bool cGame::Init(HWND hWnd,HINSTANCE hInst,bool exclusive)
@@ -102,7 +122,10 @@ bool cGame::LoopProcess()
 
 		case STATE_GAME:
 						ProcessOrder();
-						Skeleton.Move();
+						for (int i=0;i<EnemArray.numEnemies;i++)
+						{
+							EnemArray.enemies[i].Move();
+						}
 						//Critter.Move();
 						break;
 	}
@@ -119,7 +142,7 @@ bool cGame::LoopOutput()
 bool cGame::Render()
 {
 	bool res;
-	res = Graphics.Render(state,Input.GetMouse(),&Scene,&Critter,&Skeleton, &Bullet);
+	res = Graphics.Render(state, Input.GetMouse(), &Scene, &Critter, &EnemArray, &Bullet);
 	return res;
 }
 
@@ -200,9 +223,13 @@ void cGame::ProcessOrder()
 	* Enemy moving to the player
 	**/
 	Critter.GetCell(&px,&py);
-
-	Skeleton.GoToPlayer(Scene.Pathmap,px,py);
-
+	
+	
+	for (int i=0;i<EnemArray.numEnemies;i++)
+	{
+		EnemArray.enemies[i].GoToPlayer(Scene.Pathmap,px,py);
+	}
+	
 	// Critter.SetPosition(x,y);
 	/*
 	if(Mouse->ButtonDown(LEFT))
@@ -332,9 +359,12 @@ void cGame::bulletsCollision(){
 	Modificará la lista de bullets i de los enemigos y Critter añadiendo un flag "colision" por si ha colisionado con ellos
 	*/
 	int headx, heady;
+<<<<<<< HEAD
+=======
 
 	std::list<EnemyStruct>::iterator enemlist;
 
+>>>>>>> fa15a8af0eedc97f97cecd283c69c549a642decf
 	
 	//Por cada bullet
 	std::list<BulletStruct>::iterator illista;
@@ -348,6 +378,18 @@ void cGame::bulletsCollision(){
 		if(Scene.isWalkable(int(headx/32), int(heady/32)))
 		{
 			//Por cada enemigo
+<<<<<<< HEAD
+			for (int i=0;i<EnemArray.numEnemies;i++)
+			{
+				//Comprovar colision
+				//Si colisionConEnemigo
+				if((headx > EnemArray.enemies[i].x && headx < EnemArray.enemies[i].x+32) && (heady > EnemArray.enemies[i].y && heady < EnemArray.enemies[i].y+32))
+				{
+					EnemArray.enemies[i].Impactar(illista->poder);
+					//quitarVida(EnemigoColisionado, Bullet.poder) //TODO
+					illista->destroying = true;
+				}
+=======
 			enemlist = listaEnemigos.begin();
 			while( enemlist != listaEnemigos.end() )
 			{
@@ -360,6 +402,7 @@ void cGame::bulletsCollision(){
 					illista->destroying = true;
 				}
 				enemlist++;
+>>>>>>> fa15a8af0eedc97f97cecd283c69c549a642decf
 			}
 		} 
 		else 

@@ -41,7 +41,7 @@ private:
 	cController Controller;
 	cScene Scene;
 	cCritter Critter;
-	cSkeleton Skeleton;
+	sArray EnemArray;
 	cBullet Bullet;
 	
 	int state;

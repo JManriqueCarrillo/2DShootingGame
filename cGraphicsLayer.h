@@ -18,6 +18,12 @@
 
 #define PI 3.141592
 
+typedef struct
+{
+	cSkeleton enemies[10];
+	int numEnemies;
+} sArray;
+
 class cGraphicsLayer  
 {
 
@@ -31,10 +37,10 @@ public:
 	
 	void LoadData();
 	void UnLoadData();
-	bool Render(int state,cMouse *Mouse,cScene *Scene,cCritter *Critter,cSkeleton *Skeleton, cBullet *Bullet);
+	bool Render(int state,cMouse *Mouse,cScene *Scene,cCritter *Critter, sArray* EnemArray, cBullet *Bullet);
 
 	bool DrawScene(cScene *Scene);
-	bool DrawUnits(cScene *Scene,cCritter *Critter,cSkeleton *Skeleton);
+	bool DrawUnits(cScene *Scene,cCritter *Critter,sArray *enemArray);
 	bool DrawBullets(cBullet *Bullet);
 	bool DrawMouse(cMouse *Mouse);
 	bool DrawRect(RECT rc, D3DCOLOR color);
