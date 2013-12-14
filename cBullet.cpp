@@ -4,7 +4,7 @@
 
 cBullet::cBullet()
 {
-	delay = 0; 
+	delay = 0;
 	listaBullets.clear();
 }
 cBullet::~cBullet()
@@ -12,7 +12,7 @@ cBullet::~cBullet()
 	
 }
 
-void cBullet::NewBullet ( int id, float x, float y, float fAngulo, bool rebota, int numRebotes )
+void cBullet::NewBullet ( int id, float x, float y, float fAngulo, bool rebota, int numRebotes,int speed )
 {
 	BulletStruct bullet;
 	bullet.id = id;
@@ -21,6 +21,10 @@ void cBullet::NewBullet ( int id, float x, float y, float fAngulo, bool rebota, 
 	bullet.angulo = fAngulo;
 	bullet.rebota = rebota;
 	bullet.numRebotes = numRebotes;
+	bullet.speed = speed;
+	bullet.destroying = false;
+	bullet.animseq = 0;
+	bullet.destseq = 0;
 	listaBullets.insert( listaBullets.end(), bullet );
 
 	delay = 0;
@@ -138,13 +142,16 @@ void cBullet::UpdateBullets(cScene *Scene)
 			//Actualitza posició dels projectils
 			if(!entra)
 			{
-				float inc = 10.0f;
 				
-				illista->x += cosdeg(illista->angulo) * inc;
-				illista->y -= sindeg(illista->angulo) * inc;
+				
+				illista->x += cosdeg(illista->angulo) * illista->speed;
+				illista->y -= sindeg(illista->angulo) * illista->speed;
 				
 				illista++;
 			}
 		}
 	}
+}
+
+void cBullet::destroy(){
 }

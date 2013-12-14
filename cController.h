@@ -1,7 +1,7 @@
 #ifndef __CONTROLLER_H__
 #define __CONTROLLER_H__
 
-#pragma comment(lib, "XInput.lib")        // Library containing necessary 360
+#pragma comment(lib,"XInput.lib")        // Library containing necessary 360
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"d3d9.lib")
 #pragma comment(lib,"d3dx9.lib")
