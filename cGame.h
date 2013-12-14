@@ -6,19 +6,9 @@
 #include "cInputLayer.h"
 #include "cController.h"
 #include "cScene.h"
-#include <list>
 
 #define STATE_MAIN	0
 #define STATE_GAME	1
-
-typedef struct
-{
-	int id;
-	int x;
-	int y;
-	int vida;
-	bool impactado;
-}EnemyStruct;
 
 
 class cGame
@@ -41,17 +31,15 @@ private:
 	cController Controller;
 	cScene Scene;
 	cCritter Critter;
-	cSkeleton Skeleton;
+	sArray EnemArray;
 	cBullet Bullet;
 	
 	int state;
-	
-	std::list<EnemyStruct> listaEnemigos;
 
 	void ProcessOrder();
 	bool Render();
 	void Shoot();
-	
+
 	void bulletsCollision();
 };
 

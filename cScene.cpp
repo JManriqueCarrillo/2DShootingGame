@@ -15,38 +15,31 @@ cScene::~cScene(){}
 
 void cScene::LoadMap(char *file)
 {
-	GenerateMap();
-}
+	/*int i,j,n;
+	
+	FILE *f;
+	f=fopen("map.txt","r");
 
-int getDireccionContraria(int direccion)
-{
-	int retdir = direccion;
-
-	switch(direccion)
+	for(i=0;i<SCENE_HEIGHT;i++)
 	{
-		case Norte: retdir = Sur; break;
-		case Sur: retdir = Norte; break;
-		case Este: retdir = Oeste; break;
-		case Oeste: retdir = Este; break;
+		for(j=0;j<SCENE_WIDTH;j++)
+		{
+			fscanf(f,"%d",&n);
+			map[j][i]=n;
+		}
 	}
 
-	return retdir;
+	fclose(f);*/
+	GenerateMap();
 }
 
 void cScene::GenerateMap()
 {
 	int y,x,n;
-	int random;
-
-	srand (time(NULL));
-
-	// Ceiling, walls and doors
 	for(y=0;y<SCENE_HEIGHT;y++)
 	{
 		for(x=0;x<SCENE_WIDTH;x++)
 		{
-			doorMap[x][y] = 0;
-			walkMap[x][y] = 0;
 			auxMap[x][y] = map[x][y];
 
 			if(y==0 || y== SCENE_HEIGHT-1 || y== SCENE_HEIGHT-2 || x == 0 || x == SCENE_WIDTH-1)
@@ -54,84 +47,36 @@ void cScene::GenerateMap()
 			else if(y==1)
 				n = 1;
 			else
-			{
 				n = 2;
-				walkMap[x][y] = 1;
-			}
 			
 			map[x][y]=n;
 		}
 	}
-	
-	// Floor random
+	srand (time(NULL));
 	for(y=2;y<SCENE_HEIGHT-2;y++)
 	{
 		for(x=1;x<SCENE_WIDTH-1;x++)
 		{
-			random = rand() / (RAND_MAX / 10 + 1);
-			if(random == 0)
+			if(rand() / (RAND_MAX / 10 + 1) == 0)
 				map[x][y]=3;
-			else if(random == 1)
-				map[x][y]=4;
-			else if(random == 2)
-				map[x][y]=5;
 			else
 				map[x][y]=2;
 		}
 	}
 
-	// Stuff random
-	for(y=3;y<SCENE_HEIGHT-3;y++)
-	{
-		for(x=2;x<SCENE_WIDTH-2;x++)
-		{
-			if(x==12 || x==12 || y==8 || y==9) continue;
+	int random;
 
-			random = rand() / (RAND_MAX / 100 + 1);
-			if(random == 0)
-			{
-				walkMap[x][y] = 0;
-				map[x][y] = 50;
-			}
-			else if(random == 1)
-			{
-				walkMap[x][y] = 0;
-				map[x][y] = 51;
-			}
-		}
-	}
-
-	// Generate the position of the doors
 	do{
 		random = 1 + rand() / (RAND_MAX / 4 + 1);
-	}while(random == getDireccionContraria(moveDir));
+	}while(random == moveDir);
 
-	// Entrance door
-	if(moveDir != 0)
-	{
-		switch(getDireccionContraria(moveDir))
-		{
-			case Norte: map[12][0] = 84; map[13][0] = 2; map[12][1] = 2; map[13][1] = 2; break;
-			case Sur: map[12][17] = 24; map[13][17] = 2; map[12][18] = 2; map[13][18] = 2; break;
-			case Oeste: map[0][8] = 44; map[0][9] = 2; break;
-			case Este: map[24][8] = 64; map[24][9] = 2; break;
-		}
-	}
-
-	// Exit door
 	switch(random)
 	{
-		case Norte: map[12][0] = 80; map[13][0] = 2; map[12][1] = 2; map[13][1] = 2;
-					doorMap[12][0] = Norte; doorMap[13][0] = Norte; doorMap[12][1] = Norte; doorMap[13][1] = Norte; break;
-		case Sur: map[12][17] = 20; map[13][17] = 2; map[12][18] = 2; map[13][18] = 2; 
-				  doorMap[12][17] = Sur; doorMap[13][17] = Sur; doorMap[12][18] = Sur; doorMap[13][18] = Sur; break;
-		case Oeste: map[0][8] = 40; map[0][9] = 2;
-					doorMap[0][8] = Oeste; doorMap[0][9] = Oeste; break;
-		case Este: map[24][8] = 60; map[24][9] = 2;
-				   doorMap[24][8] = Este; doorMap[24][9] = Este; break;
+		case Norte: map[12][1] = 4; map[13][1] = 4; break;
+		case Sur: map[12][17] = 5; map[13][17] = 5; break;
+		case Oeste: map[0][8] = 6; map[0][9] = 6; break;
+		case Este: map[24][8] = 7; map[24][9] = 7; break;
 	}
-	// The exit door is always close at start
-	isDoorOpen = false;
 
 	//Pathmap for the enemy
 	Pathmap=(int *)malloc(sizeof(int)*(SCENE_HEIGHT*SCENE_WIDTH));
@@ -142,10 +87,12 @@ void cScene::GenerateMap()
 	{
 		for(x=1;x<SCENE_WIDTH-1;x++)
 		{
-			Pathmap[k]=map[x][y];
-			k++;
+			
+				Pathmap[k]=map[x][y];
+				k++;
 		}
 	}
+
 }
 
 void cScene::MoveMap(int dir)
@@ -187,7 +134,6 @@ void cScene::MoveMap(int dir)
 			if(moveCounter >= maxCounter)
 			{
 				isMoving = false;
-				ClosePrevDoor();
 			}
 		}
 	}
@@ -281,8 +227,7 @@ void cScene::MoveByRadar(int x,int y)
 
 bool cScene::isWalkable(int x, int y)
 {
-	//if(map[x][y] == 0 || map[x][y] == 1) return false;
-	if(walkMap[x][y] == 0) return false;
+	if(map[x][y] == 0 || map[x][y] == 1) return false;
 
 	return true;
 }
@@ -290,89 +235,4 @@ bool cScene::isWalkable(int x, int y)
 bool cScene::Visible(int cellx,int celly)
 {
 	return ((cellx>=cx)&&(cellx<cx+SCENE_WIDTH)&&(celly>=cy)&&(celly<cy+SCENE_HEIGHT)) ? 1 : 0;
-}
-
-void cScene::OpenNextDoor()
-{
-	if(!isDoorClosing)
-	{
-		isDoorOpening = true;
-		doorOpenCounter = 0;
-	}
-}
-
-void cScene::ClosePrevDoor()
-{
-	if(!isDoorOpening)
-	{
-		isDoorClosing = true;
-		doorCloseCounter = 0;
-	}
-}
-
-void cScene::UpdateDoors()
-{
-	int n, ndoor;
-	static int delay = 0;
-
-	delay++;
-	if(delay < 4) return;
-	delay = 0;
-
-	// Update opening doors
-	if(isDoorOpening)
-	{
-		for(int y=0;y<SCENE_HEIGHT;y++)
-		{
-			for(int x=0;x<SCENE_WIDTH;x++)
-			{
-				n = map[x][y];
-				ndoor = doorMap[x][y];
-				if(((n >= 80 && n < 84) || (n >= 60 && n < 64) || (n >= 40 && n < 44) || (n >= 20 && n < 24)) && (ndoor == Norte || ndoor == Sur || ndoor == Este || ndoor == Oeste))
-				{
-					map[x][y]++;
-				}
-			}
-		}
-
-		doorOpenCounter++;
-		if(doorOpenCounter >= 4)
-		{
-			isDoorOpening = false;
-			isDoorOpen = true;
-
-			for(int y=0;y<SCENE_HEIGHT;y++)
-			{
-				for(int x=0;x<SCENE_WIDTH;x++)
-				{
-					ndoor = doorMap[x][y];
-					if(ndoor == Norte || ndoor == Sur || ndoor == Este || ndoor == Oeste)
-					{
-						walkMap[x][y] = 1;
-					}
-				}
-			}
-		}
-	}
-	// Update closing doors
-	else if(isDoorClosing)
-	{
-		for(int y=0;y<SCENE_HEIGHT;y++)
-		{
-			for(int x=0;x<SCENE_WIDTH;x++)
-			{
-				n = map[x][y];
-				if((n > 80 && n <= 84) || (n > 60 && n <= 64) || (n > 40 && n <= 44) || (n > 20 && n <= 24))
-				{
-					map[x][y]--;
-				}
-			}
-		}
-
-		doorCloseCounter++;
-		if(doorCloseCounter >= 4)
-		{
-			isDoorClosing = false;
-		}
-	}
 }

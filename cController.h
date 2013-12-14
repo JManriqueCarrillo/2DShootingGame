@@ -1,12 +1,12 @@
 #ifndef __CONTROLLER_H__
 #define __CONTROLLER_H__
 
+#pragma comment(lib,"XInput.lib")        // Library containing necessary 360
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"d3d9.lib")
 #pragma comment(lib,"d3dx9.lib")
 #pragma comment(lib,"dxerr8.lib")
 #pragma comment(lib,"winmm.lib")
-#pragma comment(lib,"XInput.lib")        // Library containing necessary 360
 
 #include <D3D9.h>
 #include <D3DX9.h>
