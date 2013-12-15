@@ -4,8 +4,13 @@
 #include "cKeyboard.h"
 #include <list>
 #include <time.h>
-#include "cKeyboard.h";
+#include "cKeyboard.h"
 #include <list>
+#include <Windows.h>
+
+#define SND_FILENAME 0x20000
+#define SND_LOOP 8
+#define SND_ASYNC 1
 
 cGame::cGame() 
 {
@@ -274,7 +279,11 @@ void cGame::bulletsCollision(){
 		}
 		else 
 		{
-			illista->destroying = true;
+			if	(!illista->destroying)
+			{
+				illista->destroying = true;
+				PlaySound("Explosion.wav",NULL,SND_FILENAME|SND_ASYNC); 
+			}
 		}
 		illista++;
 	}
