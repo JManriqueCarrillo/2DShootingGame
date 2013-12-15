@@ -132,41 +132,44 @@ void cCritter::GoToEnemy(int destcx,int destcy)
 	shoot=false;
 }
 
-void cCritter::Move(int auxx, int auxy, int dir, cScene *Scene)
+int cCritter::RecursiveMoveX(float incrementoxMax, float incrementox, cScene *Scene)
 {
-	/*int mov;
+	float auxx = x + incrementox;
 
-	if(!Trajectory.IsDone())
-	{
-		mov=Trajectory.NextStep(&x,&y,&cx,&cy);
+	if(	Scene->isWalkable(int((auxx+1)/32), int((y+1)/32)) && 
+		Scene->isWalkable(int((auxx+31)/32), int((y+1)/32)) && 
+		Scene->isWalkable(int((auxx+1)/32), int((y+31)/32)) && 
+		Scene->isWalkable(int((auxx+31)/32), int((y+31)/32)) )
+		return auxx;
+	if((incrementoxMax/10) > incrementox ||incrementox == 0) return x;
 
-		if(mov==ARRIVE)
-		{
-			Trajectory.Done();
-			seq=0;
-		}
-		else if(mov==CONTINUE)
-		{
-		}
-	}
-	else
-	{
-		//Moved for attack?
-		if(attack)
-		{
-			shoot=true;
-			shoot_seq=0;
-			shoot_delay=0;
-			attack=false;
-		}
-	}*/
+	return RecursiveMoveX(incrementoxMax, incrementox - (incrementoxMax/10), Scene);
+}
 
-	if(	Scene->isWalkable(int(auxx/32), int(y/32)) && Scene->isWalkable(int(auxx/32)+1, int(y/32)) && Scene->isWalkable(int(auxx/32), int(y/32)+1) && Scene->isWalkable(int(auxx/32)+1, int(y/32)+1) ) 	x = auxx;
-	if(	Scene->isWalkable(int(x/32), int(auxy/32)) && Scene->isWalkable(int(x/32)+1, int(auxy/32)) && Scene->isWalkable(int(x/32), int(auxy/32)+1) && Scene->isWalkable(int(x/32)+1, int(auxy/32)+1) )	y = auxy;
+int cCritter::RecursiveMoveY(float incrementoyMax, float incrementoy, cScene *Scene)
+{
+	float auxy = y + incrementoy;
+
+	if(	Scene->isWalkable(int((x+1)/32), int((auxy+1)/32)) && 
+		Scene->isWalkable(int((x+31)/32), int((auxy+1)/32)) && 
+		Scene->isWalkable(int((x+1)/32), int((auxy+31)/32)) && 
+		Scene->isWalkable(int((x+31)/32), int((auxy+31)/32)) )
+		return auxy;
+	if((incrementoyMax/10) > incrementoy || incrementoy == 0) return y;
+
+	return RecursiveMoveY(incrementoyMax, incrementoy - (incrementoyMax/10), Scene);
+}
+
+void cCritter::Move(int incrementox, int incrementoy, int dir, cScene *Scene)
+{
+	x = RecursiveMoveX(incrementox, incrementox, Scene);
+	y = RecursiveMoveY(incrementoy, incrementoy, Scene);
 	
 	isMoving = true;
-	if((auxx == 0 && auxy == 0) || dir == STOP) isMoving = false;
-	else										CritterDir = dir;
+	if((incrementox == 0 && incrementoy == 0) || dir == STOP) 
+		isMoving = false;
+	else 
+		CritterDir = dir;
 
 	cx = int((x+16)/32);
 	cy = int((y+16)/32);
@@ -174,87 +177,61 @@ void cCritter::Move(int auxx, int auxy, int dir, cScene *Scene)
 
 void cCritter::MoveController(float controllerx, float controllery, cScene *Scene)
 {
-	int auxx, auxy;
 	int dir = 0;
-
-	auxx = x;
-	auxy = y;
+	int incrementox = 0;
+	int incrementoy = 0;
 
 	int incremento = 5;
 
-	auxx += incremento * controllerx;
-	auxy += incremento * controllery;
+	incrementox += incremento * controllerx;
+	incrementoy += incremento * controllery;
 
-	/*float angle = arctandeg(-controllery/controllerx);
-	if((angle < 22.5 && angle > -22.5) || angle > 337,5) dir = E;
-	if(angle > 45-22.5 && angle < 45+22.5) dir = NE;
-	if(angle > 90-22.5 && angle < 90+22.5) dir = N;
-	if(angle > 135-22.5 && angle < 135+22.5) dir = NO;
-	if(angle > 180-22.5 && angle < 180+22.5) dir = O;
-	if(angle > 225-22.5 && angle < 225+22.5) dir = SO;
-	if(angle > 270-22.5 && angle < 270+22.5) dir = S;
-	if(angle > 315-22.5 && angle < 315+22.5) dir = SE;*/
+	float angle = arctandeg(-controllery/controllerx);
 
-	int xx = 0, yy = 0;
+	if(controllerx >= 0)
+	{
+		if(angle > -45-22.5 && angle < -45+22.5) dir = SE;
+		if(angle < 22.5 && angle > -22.5) dir = E;
+		if(angle > 45-22.5 && angle < 45+22.5) dir = NE;
+		if(angle > 90-22.5) dir = N;
+		if(angle < -90+22.5) dir = S;
+	}
+	else
+	{
+		if(angle > -45-22.5 && angle < -45+22.5) dir = NO;
+		if(angle < 22.5 && angle > -22.5) dir = O;
+		if(angle > 45-22.5 && angle < 45+22.5) dir = SO;
+		if(angle > 90-22.5) dir = S;
+		if(angle < -90+22.5) dir = N;
+	}
 
-	if (controllerx >= 0)
-            xx += 1;
-    if (controllerx < 0)
-            xx -= 1;
-    if (controllery >= 0)
-            yy += 1;
-    if (controllery < 0)
-            yy -= 1;
+	sprintf(Scene->logtext,"cCritter::MoveController() angulo: %f",angle);
 
-    int index = (xx + 1) * 3 + (yy + 1);
-    int angles[] = {NO, N, NE, O, -1, E, SO, S, SE};
-    dir = angles[index];
-
-	Move(auxx,auxy,dir,Scene);
+	Move(incrementox, incrementoy, dir, Scene);
 }
 
 void cCritter::MoveKey(int dir, cScene *Scene)
 {
-	int auxx, auxy;
-
-	auxx = x;
-	auxy = y;
+	int incrementox = 0;
+	int	incrementoy = 0;
 
 	int incremento = 5;
 	int incremento2 = 4;
 
 	switch (dir)
 	{
-		case N: auxy-=incremento; break;
-		case E: auxx+=incremento; break;
-		case S: auxy+=incremento; break;
-		case O: auxx-=incremento; break;
-		case NE: auxy-=incremento2; auxx+=incremento2; break;
-		case NO: auxy-=incremento2; auxx-=incremento2; break;
-		case SE: auxy+=incremento2; auxx+=incremento2; break;
-		case SO: auxy+=incremento2; auxx-=incremento2; break;
+		case N: incrementoy-=incremento; break;
+		case E: incrementox+=incremento; break;
+		case S: incrementoy+=incremento; break;
+		case O: incrementox-=incremento; break;
+		case NE: incrementoy-=incremento2; incrementox+=incremento2; break;
+		case NO: incrementoy-=incremento2; incrementox-=incremento2; break;
+		case SE: incrementoy+=incremento2; incrementox+=incremento2; break;
+		case SO: incrementoy+=incremento2; incrementox-=incremento2; break;
 		case STOP: break; //Does fucking nothing!!!
 	}
 
-	Move(auxx,auxy,dir,Scene);
-
-	/*if(	Scene->isWalkable(int(auxx/32), int(y/32)) && Scene->isWalkable(int(auxx/32)+1, int(y/32)) && Scene->isWalkable(int(auxx/32), int(y/32)+1) && Scene->isWalkable(int(auxx/32)+1, int(y/32)+1) ) 	x = auxx;
-	if(	Scene->isWalkable(int(x/32), int(auxy/32)) && Scene->isWalkable(int(x/32)+1, int(auxy/32)) && Scene->isWalkable(int(x/32), int(auxy/32)+1) && Scene->isWalkable(int(x/32)+1, int(auxy/32)+1) )	y = auxy;
-	
-	isMoving = true;
-	if(dir == STOP) isMoving = false;
-	else			CritterDir = dir;
-
-	cx = int(x/32);
-	cy = int(y/32);*/
-
-	/*if (!GetCollision(&dir))
-	if(!isCollidingMap(
-	{
-		cx = (x+16)/((SCENE_Xf-SCENE_Xo)/20);
-		cy = (y+24)/((SCENE_Yf-SCENE_Yo)/17);
-	}
-	*/
+	Move(incrementox,incrementoy,dir,Scene);
 }
 
 void cCritter::SetPosition(int posx,int posy)

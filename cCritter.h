@@ -4,6 +4,7 @@
 
 #include <windows.h>
 #include <math.h>
+#include <stdio.h>
 #include "cTrajectory.h"
 #include "cLog.h"
 
@@ -20,6 +21,10 @@ public:
 
 	void GoToCell(int destcx,int destcy);
 	void GoToEnemy(int destcx,int destcy);
+
+	int RecursiveMoveX(float incrementoxMax, float incrementox, cScene *Scene);
+	int RecursiveMoveY(float incrementoyMax, float incrementoy, cScene *Scene);
+
 	void Move(int auxx, int auxy, int dir, cScene *Scene);
 	void MoveKey(int dir, cScene *Scene);
 

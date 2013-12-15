@@ -124,7 +124,11 @@ void cSkeleton::Impactar(int damage)
 	{
 		damaged = true;
 		health -= damage;
-		if (health <= 0)	dying = true;
+		if (health <= 0)
+		{
+			dying = true;
+			health = 0;
+		}
 	}
 
 }

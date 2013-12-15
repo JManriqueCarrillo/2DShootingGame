@@ -54,46 +54,37 @@ bool cBullet::isReadyToShoot()
 
 void cBullet::UpdateBullets(cScene *Scene)
 {
-	float x,y,angulo;
-	int id;
-	bool entra;
-
 	delay++;
+	bool deleted;
 
 	//Mou tots els projectils
 	std::list<BulletStruct>::iterator illista;
 	illista = listaBullets.begin();
 	while( illista != listaBullets.end() )
 	{
-		angulo = illista->angulo;
-		x = illista->x;
-		y = illista->y;
-		id = illista->id;
-		
 		//Variable hyper util, perque sino peta tot
-		entra = false;
+		deleted = false;
 
 		//Colisión!!!
-		if( !Scene->isWalkable(int(x/32),int(y/32)) )
+		if(illista->destroying && illista->destseq < 8)
 		{
-			//Si hay rebote en pared
-			if( illista->rebota && illista->numRebotes > 0 )
-			{
-				if( false )
-					illista->angulo *= -1;
-				else
-					illista->angulo = 180 - illista->angulo;
-
-				illista->numRebotes--;
-			}
-			else
-			{
-				//Explosión
-				illista = listaBullets.erase(illista);
-			}
+			//No hacemos nada
+		}			
+		else if (illista->destroying && illista->destseq >= 8)
+		{
+			//Explosión
+			illista = listaBullets.erase(illista);
+			deleted = true;
 		}
 		else
 		{
+			illista->x += cosdeg(illista->angulo) * illista->speed;
+			illista->y -= sindeg(illista->angulo) * illista->speed;
+		}
+
+		if (!deleted)
+			illista++;
+	}
 			/*Colisión con el personaje principal
 
 			if ( pantalla.lsTank.actiu )
@@ -141,18 +132,9 @@ void cBullet::UpdateBullets(cScene *Scene)
 			}*/
 
 			//Actualitza posició dels projectils
-			if(!entra)
-			{
-				
-				
-				illista->x += cosdeg(illista->angulo) * illista->speed;
-				illista->y -= sindeg(illista->angulo) * illista->speed;
-				
-				illista++;
-			}
-		}
-	}
+			
 }
 
-void cBullet::destroy(){
+void cBullet::GetRect(RECT *rc,int destseq){
+	SetRect(rc,destseq/2*50,32,destseq/2*50+50,78);
 }

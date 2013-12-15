@@ -66,7 +66,33 @@ bool cGraphicsLayer::Init(HWND hWnd)
 		return false;
 	}
 
+	//Init font
+	InitD3D();
+
 	return true;
+}
+
+// [ DirectX9 Initialization ]
+HRESULT cGraphicsLayer::InitD3D(void) {
+	return D3DXCreateFont(g_pD3DDevice,     //D3D Device
+                20,                                                             //Font height
+                0,                                                              //Font width
+                FW_NORMAL,                                              //Font Weight
+                1,                                                              //MipLevels
+                false,                                                  //Italic
+                DEFAULT_CHARSET,                                //CharSet
+                OUT_DEFAULT_PRECIS,                             //OutputPrecision
+                DEFAULT_QUALITY,                                //Quality
+                DEFAULT_PITCH|FF_DONTCARE,              //PitchAndFamily
+                "Arial",                                                //pFacename,
+                &g_font);                                               //ppFont
+}
+
+//Drawing Function:
+void cGraphicsLayer::DrawString(int x, int y, COLORREF color, ID3DXFont *pFont, const char *fmt, ...)
+{
+        RECT FontPos = { x, y, x + 800, y + 16 };
+        pFont->DrawText(NULL, fmt, -1, &FontPos, DT_TOP, color);
 }
 
 void cGraphicsLayer::Finalize()
@@ -112,7 +138,7 @@ void cGraphicsLayer::LoadData()
 								D3DPOOL_DEFAULT,D3DX_FILTER_NONE,D3DX_FILTER_NONE,
 								0x00ff00ff,NULL,NULL,&texMouse);
 	//Tileset
-	D3DXCreateTextureFromFileEx(g_pD3DDevice,"army.png",0,0,1,0,D3DFMT_UNKNOWN,
+	D3DXCreateTextureFromFileEx(g_pD3DDevice,"tileset.png",0,0,1,0,D3DFMT_UNKNOWN,
 								D3DPOOL_DEFAULT,D3DX_FILTER_NONE,D3DX_FILTER_NONE,
 								0x00ff00ff,NULL,NULL,&texTileset);
 }
@@ -163,35 +189,34 @@ void cGraphicsLayer::UnLoadData()
 
 bool cGraphicsLayer::Render(int state,cMouse *Mouse,cScene *Scene,cCritter *Critter,sArray *enemArray,cBullet *Bullet)
 {
-	//HRESULT Draw( LPDIRECT3DTEXTURE9 pTexture, CONST RECT *pSrcRect,
-	//				CONST D3DXVECTOR3 *pCenter,  CONST D3DXVECTOR3 *pPosition,
-	//				D3DCOLOR Color);
-
 	g_pD3DDevice->Clear( 0, NULL, D3DCLEAR_TARGET, 0xFF000000, 0, 0 );
 	g_pD3DDevice->BeginScene();
 
-		//--- SPRITES ---
+		switch(state)
+		{
+			case STATE_MAIN:
+				g_pSprite->Begin(D3DXSPRITE_ALPHABLEND);
+					g_pSprite->Draw(texMain,NULL,NULL,&D3DXVECTOR3(0.0f,0.0f,0.0f),0xFFFFFFFF);
+					DrawMouse(Mouse);
+				g_pSprite->End();
+				break;
+
+			case STATE_GAME:
+				g_pSprite->Begin(D3DXSPRITE_ALPHABLEND);
+					DrawScene(Scene);
+				g_pSprite->End();
+
+				g_pSprite->Begin(D3DXSPRITE_ALPHABLEND);
+					DrawSceneLayer2(Scene);
+					DrawUnits(Scene,Critter,enemArray);
+					DrawBullets(Bullet);
+				g_pSprite->End();
+				break;
+		}
+
 		g_pSprite->Begin(D3DXSPRITE_ALPHABLEND);
-
-			switch(state)
-			{
-				case STATE_MAIN:
-								g_pSprite->Draw(texMain,NULL,NULL,&D3DXVECTOR3(0.0f,0.0f,0.0f),0xFFFFFFFF);
-								DrawMouse(Mouse);
-								break;
-
-				case STATE_GAME:
-								//Graphic User Interface
-								//g_pSprite->Draw(texGame,NULL,NULL,&D3DXVECTOR3(0.0f,0.0f,0.0f),0xFFFFFFFF);
-								DrawScene(Scene);
-								DrawUnits(Scene,Critter,enemArray);
-								DrawBullets(Bullet);
-								break;
-			}
-
+			DrawString(5,5,D3DCOLOR_ARGB(255,255, 255, 0), g_font, Scene->logtext);
 		g_pSprite->End();
-
-		
 
 	g_pD3DDevice->EndScene();
 	g_pD3DDevice->Present( NULL, NULL, NULL, NULL );
@@ -203,41 +228,74 @@ void cGraphicsLayer::GetSceneRect(RECT *rc, int n)
 {
 	switch(n)
 	{
-		case 0: SetRect(rc,32,32*3,32*2,32*4); break;
-		case 1: SetRect(rc,32*6,32*0,32*7,32*1); break;
-		case 2: SetRect(rc,32*0,32*0,32*1,32*1); break;
-		case 3: SetRect(rc,32*0,32*6,32*1,32*7); break;
-		case 4: SetRect(rc,32*6,32*7,32*7,32*8); break;
+		case 0: SetRect(rc,32*5,32*1,32*6,32*2); break;
+		case 40:
+		case 41:
+		case 42:
+		case 43:
+		case 44:
+		case 45:
+		case 60:
+		case 61:
+		case 62:
+		case 63:
+		case 64:
+		case 65:
+		case 1: SetRect(rc,32*5,32*0,32*6,32*1); break;
+		case 3: SetRect(rc,32*1,32*0,32*2,32*1); break;
+		case 4: SetRect(rc,32*2,32*0,32*3,32*1); break;
+		case 5: SetRect(rc,32*1,32*1,32*2,32*2); break;
+		case 2: //Lo de abajo
 		default: SetRect(rc,32*0,32*0,32*1,32*1); break;
 	}
 }
 
+bool cGraphicsLayer::GetSceneSecondLayerRect(RECT *rc, int n)
+{
+	switch(n)
+	{
+		//Barriles
+		case 50: SetRect(rc,32*7,32*1,32*8,32*2); break;
+		case 51: SetRect(rc,32*7,32*3,32*8,32*4); break;
+
+		// Puerta izquierda
+		case 40: SetRect(rc,32*0,32*2,32*1,32*4); break;
+		case 41: SetRect(rc,32*1,32*2,32*2,32*4); break;
+		case 42: SetRect(rc,32*2,32*2,32*3,32*4); break;
+		case 43: SetRect(rc,32*3,32*2,32*4,32*4); break;
+		case 44: SetRect(rc,32*4,32*2,32*5,32*4); break;
+
+		case 60: SetRect(rc,32*0,32*4,32*1,32*6); break;
+		case 61: SetRect(rc,32*1,32*4,32*2,32*6); break;
+		case 62: SetRect(rc,32*2,32*4,32*3,32*6); break;
+		case 63: SetRect(rc,32*3,32*4,32*4,32*6); break;
+		case 64: SetRect(rc,32*4,32*4,32*5,32*6); break;
+
+		case 80: SetRect(rc,32*5,32*2,32*7,32*4); break;
+		case 81: SetRect(rc,32*5,32*4,32*7,32*6); break;
+		case 82: SetRect(rc,32*5,32*6,32*7,32*8); break;
+		case 83: SetRect(rc,32*5,32*8,32*7,32*10); break;
+		//case 84: SetRect(rc,32*5,32*10,32*7,32*12); break;
+
+		case 20: SetRect(rc,32*0,32*6,32*2,32*8); break;
+		case 21: SetRect(rc,32*0,32*8,32*2,32*10); break;
+		case 22: SetRect(rc,32*0,32*10,32*2,32*12); break;
+		case 23: SetRect(rc,32*0,32*12,32*2,32*14); break;
+		//case 24: SetRect(rc,32*0,32*14,32*2,32*16); break;
+
+		default: return false;
+	}
+
+	return true;
+}
+
 bool cGraphicsLayer::DrawScene(cScene *Scene)
 {
-	RECT rc;
+	RECT rc, rc2;
 	int x,y,n,n2,
 		fx,fy,
 		pantx,panty;
-
-	//Tile based map
-	/*fx=Scene->cx+SCENE_WIDTH;
-	fy=Scene->cy+SCENE_HEIGHT;
-
-	for(y=Scene->cy;y<fy;y++)
-	{
-		panty = SCENE_Yo + ((y-Scene->cy)<<5);
-
-		for(x=Scene->cx;x<fx;x++)
-		{
-			pantx = SCENE_Xo + ((x-Scene->cx)<<5);
-
-			n = Scene->map[y][x];
-			SetRect(&rc,n<<5,0,(n+1)<<5,32);
-			g_pSprite->Draw(texTiles,&rc,NULL, 
-							&D3DXVECTOR3(float(pantx),float(panty),0.0f), 
-							0xFFFFFFFF);
-		}
-	}*/
+	bool paint;
 
 	fx = SCENE_WIDTH;
 	fy = SCENE_HEIGHT;
@@ -274,15 +332,61 @@ bool cGraphicsLayer::DrawScene(cScene *Scene)
 	}
 
 	//Draw radar
-	x=RADAR_Xo+(Scene->cx<<2);
+	/*x=RADAR_Xo+(Scene->cx<<2);
 	y=RADAR_Yo+(Scene->cy<<2);
 	SetRect(&rc,0,32,80,100);
 	g_pSprite->Draw(texTiles,&rc,NULL, 
 					&D3DXVECTOR3(float(x),float(y),0.0f), 
-					0xFFFFFFFF);
+					0xFFFFFFFF);*/
 	return true;
 }
 
+bool cGraphicsLayer::DrawSceneLayer2(cScene *Scene)
+{
+	RECT rc, rc2;
+	int x,y,n,n2,
+		fx,fy,
+		pantx,panty;
+	bool paint;
+
+	fx = SCENE_WIDTH;
+	fy = SCENE_HEIGHT;
+	for(y=0;y<fy;y++)
+	{
+		for(x=0;x<fx;x++)
+		{
+			n = Scene->map[x][y];
+			paint = GetSceneSecondLayerRect(&rc2,n);
+
+			if(paint)
+			{
+				if(Scene->isMoving)
+				{
+					int offsetx = 0, offsety = 0, offsetWIDTH = 0, offsetHEIGHT = 0;
+					Scene->getMoveMapOffsets(&offsetx,&offsety,&offsetWIDTH,&offsetHEIGHT);
+
+					g_pSprite->Draw(texTileset,&rc,NULL, 
+									&D3DXVECTOR3(float(x*32 + offsetx*32 + offsetWIDTH*32),float(y*32 + offsety*32 + offsetHEIGHT*32),0.0f), 
+									0xFFFFFFFF);
+
+					n2 = Scene->auxMap[x][y];
+					paint = GetSceneSecondLayerRect(&rc2,n2);
+
+					g_pSprite->Draw(texTileset,&rc,NULL, 
+									&D3DXVECTOR3(float(x*32 + offsetx*32),float(y*32 + offsety*32),0.0f), 
+									0xFFFFFFFF);
+				}
+				else
+				{
+					g_pSprite->Draw(texTileset,&rc2,NULL, 
+									&D3DXVECTOR3(float(x*32),float(y*32),0.0f), 
+									0xFFFFFFFF);
+				}
+			}
+		}
+	}
+	return true;
+}
 bool cGraphicsLayer::DrawUnits(cScene *Scene,cCritter *Critter,sArray *enemArray)
 {
 	int cx,cy,posx,posy;
@@ -384,7 +488,16 @@ bool cGraphicsLayer::DrawBullets(cBullet *Bullet)
 		D3DXMatrixTransformation2D(&matRotate, NULL, NULL, NULL, &vCenter,-PI/180*angulo , &vPosition);
 		g_pSprite->SetTransform(&matRotate);
 
-		SetRect(&rc,0,0,32,32);
+		if (illista->destroying)
+		{
+			Bullet->GetRect(&rc,illista->destseq);
+			illista->destseq++;
+		}
+		else
+		{
+			SetRect(&rc,0,0,32,32);
+		}
+
 		g_pSprite->Draw(texBullet,&rc,NULL, 
 				NULL,//&D3DXVECTOR3(float(x),float(y),0.0f), 
 				0xFFFFFFFF);
@@ -392,6 +505,7 @@ bool cGraphicsLayer::DrawBullets(cBullet *Bullet)
 		D3DXMatrixRotationZ(&matRotate, 0);
 		g_pSprite->SetTransform(&matRotate);
 
+		
 		illista++;
 	}
 

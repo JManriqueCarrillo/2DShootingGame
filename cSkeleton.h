@@ -34,14 +34,16 @@ public:
 	int x,y;		//Position in total map
 	int cx,cy;		//Cell position in total map
 	int id_enemy;
+	bool dead;
+	bool dying;
 
 private:
 
 	int health;
 	bool damaged;
-	bool dying;
+
 	int seq_die;
-	bool dead;
+
 
 	//AI of the enemy for the path
 	cPath Trajectory;

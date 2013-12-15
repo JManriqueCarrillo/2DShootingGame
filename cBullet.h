@@ -31,6 +31,7 @@ public:
 	void UpdateBullets(cScene *Scene);
 	bool isReadyToShoot();
 	void destroy();
+	void GetRect(RECT *rc, int destseq);
 
 	std::list<BulletStruct> listaBullets;
 
