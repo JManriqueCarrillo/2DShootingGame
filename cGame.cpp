@@ -161,194 +161,81 @@ void cGame::ProcessOrder()
 	//b4pointer = Mouse->GetPointer();
 	//Mouse->GetPosition(&mx,&my);
 
-	float xcont = Controller.getLeftStickX(0);
-	float ycont = Controller.getLeftStickY(0);
-
-	if	   (Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_D)) Critter.MoveKey(NE,&Scene);
-	else if(Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_A)) Critter.MoveKey(NO,&Scene);
-	else if(Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_D)) Critter.MoveKey(NE,&Scene);
-	else if(Keyboard->KeyDown(DIK_S)&&Keyboard->KeyDown(DIK_A)) Critter.MoveKey(SO,&Scene);
-	else if(Keyboard->KeyDown(DIK_S)&&Keyboard->KeyDown(DIK_D)) Critter.MoveKey(SE,&Scene);
-	else if(Keyboard->KeyDown(DIK_W)) Critter.MoveKey(N,&Scene);
-	else if(Keyboard->KeyDown(DIK_S)) Critter.MoveKey(S,&Scene);
-	else if(Keyboard->KeyDown(DIK_D)) Critter.MoveKey(E,&Scene);
-	else if(Keyboard->KeyDown(DIK_A)) Critter.MoveKey(O,&Scene);
-	else if(xcont!= 0 && ycont!=0) Critter.MoveController(xcont,-ycont,&Scene); // Controller movement
-	else {Critter.MoveKey(STOP,&Scene);} 
-
 	if(Scene.isMoving)
 	{
 		Scene.MoveMap(Scene.moveDir);
 	}
 	else
 	{
-		switch(Scene.map[int((Critter.x+16)/32)][int((Critter.y+16)/32)])
-		{
-			case 4: Scene.MoveMap(Norte); break;
-			case 5: Scene.MoveMap(Sur); break;
-			case 6: Scene.MoveMap(Oeste); break;
-			case 7: Scene.MoveMap(Este); break;
-		}
-	}
-	
-	if((Keyboard->KeyDown(DIK_RCONTROL) || Controller.buttonDown(0, XINPUT_GAMEPAD_X)) && Bullet.isReadyToShoot())
-	{
-		int posx, posy;
-		int dir, angulo=0;
-		Critter.GetPosition(&posx,&posy);
+		float xcont = Controller.getLeftStickX(0);
+		float ycont = Controller.getLeftStickY(0);
 
-		switch(Critter.CritterDir)
+		if	   (Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_D)) Critter.MoveKey(NE,&Scene);
+		else if(Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_A)) Critter.MoveKey(NO,&Scene);
+		else if(Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_D)) Critter.MoveKey(NE,&Scene);
+		else if(Keyboard->KeyDown(DIK_S)&&Keyboard->KeyDown(DIK_A)) Critter.MoveKey(SO,&Scene);
+		else if(Keyboard->KeyDown(DIK_S)&&Keyboard->KeyDown(DIK_D)) Critter.MoveKey(SE,&Scene);
+		else if(Keyboard->KeyDown(DIK_W)) Critter.MoveKey(N,&Scene);
+		else if(Keyboard->KeyDown(DIK_S)) Critter.MoveKey(S,&Scene);
+		else if(Keyboard->KeyDown(DIK_D)) Critter.MoveKey(E,&Scene);
+		else if(Keyboard->KeyDown(DIK_A)) Critter.MoveKey(O,&Scene);
+		else if(xcont!= 0 || ycont!=0) Critter.MoveController(xcont,-ycont,&Scene); // Controller movement
+		else {Critter.MoveKey(STOP,&Scene);} 
+
+		if(Scene.isDoorOpen)
 		{
-			case N: angulo = 90; break;
-			case S: angulo = 270; break;
-			case O: angulo = 180; break;
-			case E: angulo = 0; break;
-			case NO: angulo = 135; break;
-			case NE: angulo = 45; break;
-			case SO: angulo = 225; break;
-			case SE: angulo = 315; break;
+			switch(Scene.doorMap[int((Critter.x+16)/32)][int((Critter.y+16)/32)])
+			{
+				case Norte: Scene.MoveMap(Norte); break;
+				case Sur: Scene.MoveMap(Sur); break;
+				case Oeste: Scene.MoveMap(Oeste); break;
+				case Este: Scene.MoveMap(Este); break;
+			}
+		}
+
+		if((Keyboard->KeyDown(DIK_RCONTROL) || Controller.buttonDown(0, XINPUT_GAMEPAD_X)) && Bullet.isReadyToShoot())
+		{
+			int posx, posy;
+			int dir, angulo=0;
+			Critter.GetPosition(&posx,&posy);
+
+			switch(Critter.CritterDir)
+			{
+				case N: angulo = 90; break;
+				case S: angulo = 270; break;
+				case O: angulo = 180; break;
+				case E: angulo = 0; break;
+				case NO: angulo = 135; break;
+				case NE: angulo = 45; break;
+				case SO: angulo = 225; break;
+				case SE: angulo = 315; break;
 		
-		}
-		Bullet.NewBullet(0,posx, posy, angulo, false, 0,10);
-	}
-
-	bulletsCollision();
-
-	Bullet.UpdateBullets(&Scene);
-
-	/**
-	* Enemy moving to the player
-	**/
-	Critter.GetCell(&px,&py);
-	
-	
-	for (int i=0;i<EnemArray.numEnemies;i++)
-	{
-		EnemArray.enemies[i].GoToPlayer(Scene.Pathmap,px,py);
-	}
-	
-	// Critter.SetPosition(x,y);
-	/*
-	if(Mouse->ButtonDown(LEFT))
-	{
-		Mouse->SetPointer(NORMAL);
-		
-		if(Mouse->In(SCENE_Xo,SCENE_Yo,SCENE_Xf,SCENE_Yf))
-		{
-			if(Mouse->GetSelection()!=SELECT_SCENE)
-			{
-				//Select movement/attack
-				if(Critter.GetSelected())
-				{
-					//Attack
-					Skeleton.GetCell(&cx,&cy);
-					if(Mouse->InCell(&Scene,cx,cy))
-					{
-						if(!Critter.GetShooting())
-							Critter.GoToEnemy(Scene.cx+cx,Scene.cx+cy);
-					}
-					//Movement
-					else
-					{
-						Mouse->GetCell(&cx,&cy);
-						Critter.GoToCell(Scene.cx+cx,Scene.cy+cy);
-					}
-				}
-				//Begin selection
-				else
-				{
-					Mouse->SetSelection(SELECT_SCENE);
-					Mouse->SetSelectionPoint(mx,my);
-				}
 			}
+			Bullet.NewBullet(0,posx, posy, angulo, false, 0, 10);
 		}
-		else if(Mouse->In(RADAR_Xo,RADAR_Yo,RADAR_Xf,RADAR_Yf))
-		{
-			if(Critter.GetSelected())
-			{
-				int radar_cell_x = (mx-RADAR_Xo) >> 2, //[672..799]/4=[0..31]
-					radar_cell_y = (my-RADAR_Yo) >> 2; //[ 60..187]/4=[0..31]
 
-				Critter.GoToCell(radar_cell_x,radar_cell_y);
-			}
-			else
-			{
-				Mouse->SetSelection(SELECT_RADAR);
-				Scene.MoveByRadar(mx,my);
-			}
+		if(Keyboard->KeyDown(DIK_LCONTROL))
+			Scene.OpenNextDoor();
+
+		bulletsCollision();
+	
+		Bullet.UpdateBullets(&Scene);
+
+		/**
+		* Update the doors animation
+		**/
+		Scene.UpdateDoors();
+
+		/**
+		* Enemy moving to the player
+		**/
+		Critter.GetCell(&px,&py);
+
+		for (int i=0;i<EnemArray.numEnemies;i++)
+		{
+			EnemArray.enemies[i].GoToPlayer(Scene.Pathmap,px,py);
 		}
 	}
-	else if(Mouse->ButtonUp(LEFT))
-	{
-		if(Mouse->GetSelection()==SELECT_SCENE)
-		{
-			Mouse->GetSelectionPoint(&msx,&msy);
-
-			xo = min(msx,mx)+(Scene.cx<<5)-SCENE_Xo;
-			xf = max(msx,mx)+(Scene.cx<<5)-SCENE_Xo;
-			yo = min(msy,my)+(Scene.cy<<5)-SCENE_Yo,
-			yf = max(msy,my)+(Scene.cy<<5)-SCENE_Yo;
-			
-			Critter.GetPosition(&x,&y);
-			if((xo<(x+32))&&(xf>=x)&&(yo<(y+32))&&(yf>=y))
-				Critter.SetSelected(true);
-		}
-		Mouse->SetSelection(SELECT_NOTHING);
-
-		//Mouse over Critter
-		Critter.GetCell(&cx,&cy);
-		if(Mouse->InCell(&Scene,cx,cy))
-		{
-			Mouse->SetPointer(SELECT);
-			return;
-		}
-		//Mouse over Enemy
-		Skeleton.GetCell(&cx,&cy);
-		if(Mouse->InCell(&Scene,cx,cy))
-		{
-			Mouse->SetPointer(ATTACK);
-		}
-		else if(Mouse->In(s,SCENE_Yo,SCENE_Xf,SCENE_Yf-s))
-		{
-			//Critter selected pointing, where to move
-			if(Critter.GetSelected())	Mouse->SetPointer(MOVE);
-			//Critter selected but mouse out map
-			else						Mouse->SetPointer(NORMAL);
-		}
-		else if(Mouse->In(RADAR_Xo,RADAR_Yo,RADAR_Xf,RADAR_Yf))
-		{
-			//Critter selected pointing, where to move trough radar
-			if(Critter.GetSelected())	Mouse->SetPointer(MOVE);
-		}
-		else
-		{	
-			//Arrow mouse pointers to move through scene
-			if	   (Mouse->In(             s,             s,SCREEN_RES_X-s,SCREEN_RES_Y-s)) Mouse->SetPointer(NORMAL);
-			else if(Mouse->In(             s,             0,SCREEN_RES_X-s,             s)) Mouse->SetPointer(MN);
-			else if(Mouse->In(             s,SCREEN_RES_Y-s,SCREEN_RES_X-s,  SCREEN_RES_Y)) Mouse->SetPointer(MS);
-			else if(Mouse->In(SCREEN_RES_X-s,             s,  SCREEN_RES_X,SCREEN_RES_Y-s)) Mouse->SetPointer(ME);
-			else if(Mouse->In(             0,             s,             s,SCREEN_RES_Y-s)) Mouse->SetPointer(MO);
-			else if(Mouse->In(             0,             0,             s,             s)) Mouse->SetPointer(MNO);
-			else if(Mouse->In(             0,SCREEN_RES_Y-s,             s,  SCREEN_RES_Y)) Mouse->SetPointer(MSO);
-			else if(Mouse->In(SCREEN_RES_X-s,             0,  SCREEN_RES_X,             s)) Mouse->SetPointer(MNE);
-			else if(Mouse->In(SCREEN_RES_X-s,SCREEN_RES_Y-s,  SCREEN_RES_X,  SCREEN_RES_Y)) Mouse->SetPointer(MSE);
-			else																			Mouse->SetPointer(NORMAL);
-
-			p = Mouse->GetPointer();
-			if((p>=MN)&&(p<=MSO))	Scene.Move(p);
-		}
-	}
-	if(Mouse->ButtonDown(RIGHT))
-	{
-		if(Critter.GetSelected())
-		{
-			Critter.SetSelected(false);
-			Mouse->SetPointer(NORMAL);
-		}
-	}
-
-	if(b4pointer!=Mouse->GetPointer()) Mouse->InitAnim();
-	*/
 }
 
 void cGame::bulletsCollision(){
@@ -384,9 +271,8 @@ void cGame::bulletsCollision(){
 		}
 		else 
 		{
-			illista->destroying = true;;
+			illista->destroying = true;
 		}
 		illista++;
 	}
-	
 }
