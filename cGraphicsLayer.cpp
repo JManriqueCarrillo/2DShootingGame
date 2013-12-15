@@ -488,7 +488,16 @@ bool cGraphicsLayer::DrawBullets(cBullet *Bullet)
 		D3DXMatrixTransformation2D(&matRotate, NULL, NULL, NULL, &vCenter,-PI/180*angulo , &vPosition);
 		g_pSprite->SetTransform(&matRotate);
 
-		SetRect(&rc,0,0,32,32);
+		if (illista->destroying)
+		{
+			Bullet->GetRect(&rc,illista->destseq);
+			illista->destseq++;
+		}
+		else
+		{
+			SetRect(&rc,0,0,32,32);
+		}
+
 		g_pSprite->Draw(texBullet,&rc,NULL, 
 				NULL,//&D3DXVECTOR3(float(x),float(y),0.0f), 
 				0xFFFFFFFF);
@@ -496,6 +505,7 @@ bool cGraphicsLayer::DrawBullets(cBullet *Bullet)
 		D3DXMatrixRotationZ(&matRotate, 0);
 		g_pSprite->SetTransform(&matRotate);
 
+		
 		illista++;
 	}
 

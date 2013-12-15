@@ -251,7 +251,7 @@ void cGame::bulletsCollision(){
 	{
 		headx = illista->x + 32 + Bullet.cosdeg(illista->angulo) * illista->speed;
 		heady = illista->y + 16 + Bullet.sindeg(illista->angulo) * illista->speed;
-
+		
 		//	Si no se ha salido de limites
 		if(Scene.isWalkable(int(headx/32), int(heady/32)))
 		{
@@ -260,6 +260,7 @@ void cGame::bulletsCollision(){
 			{
 				//Comprovar colision
 				//Si colisionConEnemigo
+				
 				if((headx > EnemArray.enemies[i].x && headx < EnemArray.enemies[i].x+32) && (heady > EnemArray.enemies[i].y && heady < EnemArray.enemies[i].y+32))
 				{
 					EnemArray.enemies[i].Impactar(illista->poder);
