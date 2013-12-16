@@ -21,7 +21,6 @@ cGame::cGame()
 		EnemArray.enemies[i].SetEnemy(i,newx,newy,100);
 	}
 
-	Critters.numPlayers = 0;
 }
 cGame::~cGame(){}
 
@@ -98,26 +97,16 @@ bool cGame::LoopInput()
 bool cGame::LoopProcess()
 {
 	cMouse *Mouse;
-	cKeyboard *Keyboard;
-
 	Mouse = Input.GetMouse();
-	Keyboard = Input.GetKeyboard();
 
 	switch(state)
 	{
 		case STATE_MAIN:
-						/*if(Mouse->ButtonDown(LEFT))
+						if(Mouse->ButtonDown(LEFT))
 						{
 							//Play button
 							if(Mouse->In(334,236,420,278))
 							{
-								Critters.numPlayers = 3;
-								Critters.Players[0].controller = false;
-								Critters.Players[0].numController = 0;
-								Critters.Players[1].controller = true;
-								Critters.Players[1].numController = 0;
-								Critters.Players[2].controller = true;
-								Critters.Players[2].numController = 1;
 								state = STATE_GAME;
 							}
 							//Exit button
@@ -125,12 +114,7 @@ bool cGame::LoopProcess()
 							{
 								return false;
 							}
-						}*/
-						if(CheckNewPlayerUpdate(Keyboard))
-						{
-							state = STATE_GAME;
 						}
-
 						break;
 
 		case STATE_GAME:
@@ -139,7 +123,6 @@ bool cGame::LoopProcess()
 						{
 							EnemArray.enemies[i].Move();
 						}
-						CheckNewPlayerUpdate(Keyboard);
 						//Critter.Move();
 						break;
 	}
@@ -156,36 +139,8 @@ bool cGame::LoopOutput()
 bool cGame::Render()
 {
 	bool res;
-	res = Graphics.Render(state, Input.GetMouse(), &Scene, &Critters, &EnemArray, &Bullet);
+	res = Graphics.Render(state, Input.GetMouse(), &Scene, &Critter, &EnemArray, &Bullet);
 	return res;
-}
-
-bool cGame::CheckNewPlayerUpdate(cKeyboard *Keyboard)
-{
-	static bool keyboardUsed = false;
-
-	for(int i=0;i<4;i++)
-	{
-		if(Controller.buttonDown(i, XINPUT_GAMEPAD_START) && !Controller.used[i])
-		{
-			Critters.numPlayers++;
-			Critters.Players[Critters.numPlayers-1].controller = true;
-			Critters.Players[Critters.numPlayers-1].numController = i;
-			Controller.used[i] = true;
-			return true;
-		}
-	}
-
-	if(Keyboard->KeyDown(DIK_RETURN) && !keyboardUsed)
-	{
-		Critters.numPlayers++;
-		Critters.Players[Critters.numPlayers-1].controller = false;
-		Critters.Players[Critters.numPlayers-1].numController = 0;
-		keyboardUsed = true;
-		return true;
-	}
-
-	return false;
 }
 
 void cGame::ProcessOrder()
@@ -197,7 +152,6 @@ void cGame::ProcessOrder()
 	int xo,xf,yo,yf;
 	//int b4pointer;
 	bool KeyPushed = false;
-	static int delayBullet[4] = {0,0,0,0};
 
 	//Player position
 	int px,py;
@@ -213,64 +167,51 @@ void cGame::ProcessOrder()
 	}
 	else
 	{
-		for(int i=0;i<Critters.numPlayers;i++)
+		float xcont = Controller.getLeftStickX(0);
+		float ycont = Controller.getLeftStickY(0);
+
+		if	   (Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_D)) Critter.MoveKey(NE,&Scene);
+		else if(Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_A)) Critter.MoveKey(NO,&Scene);
+		else if(Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_D)) Critter.MoveKey(NE,&Scene);
+		else if(Keyboard->KeyDown(DIK_S)&&Keyboard->KeyDown(DIK_A)) Critter.MoveKey(SO,&Scene);
+		else if(Keyboard->KeyDown(DIK_S)&&Keyboard->KeyDown(DIK_D)) Critter.MoveKey(SE,&Scene);
+		else if(Keyboard->KeyDown(DIK_W)) Critter.MoveKey(N,&Scene);
+		else if(Keyboard->KeyDown(DIK_S)) Critter.MoveKey(S,&Scene);
+		else if(Keyboard->KeyDown(DIK_D)) Critter.MoveKey(E,&Scene);
+		else if(Keyboard->KeyDown(DIK_A)) Critter.MoveKey(O,&Scene);
+		else if(xcont!= 0 || ycont!=0) Critter.MoveController(xcont,-ycont,&Scene); // Controller movement
+		else {Critter.MoveKey(STOP,&Scene);} 
+
+		if(Scene.isDoorOpen)
 		{
-			delayBullet[i]++;
-
-			if(Critters.Players[i].controller)
+			switch(Scene.doorMap[int((Critter.x+16)/32)][int((Critter.y+16)/32)])
 			{
-				float xcont = Controller.getLeftStickX(Critters.Players[i].numController);
-				float ycont = Controller.getLeftStickY(Critters.Players[i].numController);
-				if(xcont!= 0 || ycont!=0) Critters.Players[i].MoveController(xcont,-ycont,&Scene);
-				else {Critters.Players[i].MoveKey(STOP,&Scene);}
-
-				if(Controller.buttonDown(Critters.Players[i].numController, XINPUT_GAMEPAD_X) && delayBullet[i] > 15)
-				{
-					int posx, posy, angulo;
-					Critters.Players[i].Fire(&posx,&posy,&angulo);
-					Bullet.NewBullet(0,posx, posy, angulo, false, 0, 10);
-					delayBullet[i] = 0;
-
-					Critters.Players[i].life--;
-				}
+				case Norte: Scene.MoveMap(Norte); break;
+				case Sur: Scene.MoveMap(Sur); break;
+				case Oeste: Scene.MoveMap(Oeste); break;
+				case Este: Scene.MoveMap(Este); break;
 			}
-			else
+		}
+
+		if((Keyboard->KeyDown(DIK_RCONTROL) || Controller.buttonDown(0, XINPUT_GAMEPAD_X)) && Bullet.isReadyToShoot())
+		{
+			int posx, posy;
+			int dir, angulo=0;
+			Critter.GetPosition(&posx,&posy);
+
+			switch(Critter.CritterDir)
 			{
-				if(Critters.Players[i].numController == 0)
-				{
-					if	   (Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_D)) Critters.Players[i].MoveKey(NE,&Scene);
-					else if(Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_A)) Critters.Players[i].MoveKey(NO,&Scene);
-					else if(Keyboard->KeyDown(DIK_W)&&Keyboard->KeyDown(DIK_D)) Critters.Players[i].MoveKey(NE,&Scene);
-					else if(Keyboard->KeyDown(DIK_S)&&Keyboard->KeyDown(DIK_A)) Critters.Players[i].MoveKey(SO,&Scene);
-					else if(Keyboard->KeyDown(DIK_S)&&Keyboard->KeyDown(DIK_D)) Critters.Players[i].MoveKey(SE,&Scene);
-					else if(Keyboard->KeyDown(DIK_W)) Critters.Players[i].MoveKey(N,&Scene);
-					else if(Keyboard->KeyDown(DIK_S)) Critters.Players[i].MoveKey(S,&Scene);
-					else if(Keyboard->KeyDown(DIK_D)) Critters.Players[i].MoveKey(E,&Scene);
-					else if(Keyboard->KeyDown(DIK_A)) Critters.Players[i].MoveKey(O,&Scene);
-					else {Critters.Players[i].MoveKey(STOP,&Scene);}
-			
-					if(Keyboard->KeyDown(DIK_RCONTROL) && delayBullet[i] > 15)
-					{
-						int posx, posy, angulo;
-						Critters.Players[i].Fire(&posx,&posy,&angulo);
-						Bullet.NewBullet(0,posx, posy, angulo, false, 0, 10);
-						delayBullet[i] = 0;
-
-						Critters.Players[i].life--;
-					}
-				}
+				case N: angulo = 90; break;
+				case S: angulo = 270; break;
+				case O: angulo = 180; break;
+				case E: angulo = 0; break;
+				case NO: angulo = 135; break;
+				case NE: angulo = 45; break;
+				case SO: angulo = 225; break;
+				case SE: angulo = 315; break;
+		
 			}
-
-			if(Scene.isDoorOpen)
-			{
-				switch(Scene.doorMap[int((Critters.Players[0].x+16)/32)][int((Critters.Players[0].y+16)/32)])
-				{
-					case Norte: Scene.MoveMap(Norte); break;
-					case Sur: Scene.MoveMap(Sur); break;
-					case Oeste: Scene.MoveMap(Oeste); break;
-					case Este: Scene.MoveMap(Este); break;
-				}
-			}
+			Bullet.NewBullet(0,posx, posy, angulo, false, 0, 10);
 		}
 
 		if(Keyboard->KeyDown(DIK_LCONTROL))
@@ -288,7 +229,8 @@ void cGame::ProcessOrder()
 		/**
 		* Enemy moving to the player
 		**/
-		Critters.Players[0].GetCell(&px,&py);
+		Critter.GetCell(&px,&py);
+
 		for (int i=0;i<EnemArray.numEnemies;i++)
 		{
 			EnemArray.enemies[i].GoToPlayer(Scene.Pathmap,px,py);

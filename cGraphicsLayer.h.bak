@@ -24,12 +24,6 @@ typedef struct
 	int numEnemies;
 } sArray;
 
-typedef struct
-{
-	cCritter Players[4];
-	int numPlayers;
-} sArrayPlayers;
-
 class cGraphicsLayer  
 {
 
@@ -43,11 +37,11 @@ public:
 	
 	void LoadData();
 	void UnLoadData();
-	bool Render(int state,cMouse *Mouse,cScene *Scene,sArrayPlayers *Critters, sArray* EnemArray, cBullet *Bullet);
+	bool Render(int state,cMouse *Mouse,cScene *Scene,cCritter *Critter, sArray* EnemArray, cBullet *Bullet);
 
 	bool DrawScene(cScene *Scene);
 	bool DrawSceneLayer2(cScene *Scene);
-	bool DrawUnits(cScene *Scene,sArrayPlayers *Critters,sArray *enemArray);
+	bool DrawUnits(cScene *Scene,cCritter *Critter,sArray *enemArray);
 	bool DrawBullets(cBullet *Bullet);
 	bool DrawMouse(cMouse *Mouse);
 	bool DrawRect(RECT rc, D3DCOLOR color);
@@ -55,7 +49,7 @@ public:
 private:
 
 	HRESULT InitD3D(void);
-	void DrawString(int x, int y, COLORREF color, ID3DXFont *pFont, int center, const char *fmt, ...);
+	void DrawString(int x, int y, COLORREF color, ID3DXFont *pFont, const char *fmt, ...);
 
 	void GetSceneRect(RECT *rc, int n);
 	bool GetSceneSecondLayerRect(RECT *rc, int n);
@@ -65,11 +59,10 @@ private:
 	LPD3DXSPRITE g_pSprite;
 
 	LPDIRECT3DTEXTURE9 texMain,texGame;
-	LPDIRECT3DTEXTURE9 texTiles,texCharacters,texMouse,texTileset,texBullet, texPlayers;
+	LPDIRECT3DTEXTURE9 texTiles,texCharacters,texMouse,texTileset,texBullet;
 
 	// [ DX9 Variables ]
-	LPD3DXFONT g_font40;
-	LPD3DXFONT g_font20;
+	LPD3DXFONT g_font;
 };
 
 

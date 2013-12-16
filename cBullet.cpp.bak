@@ -4,6 +4,7 @@
 
 cBullet::cBullet()
 {
+	delay = 0;
 	listaBullets.clear();
 }
 cBullet::~cBullet()
@@ -26,6 +27,8 @@ void cBullet::NewBullet ( int id, float x, float y, float fAngulo, bool rebota, 
 	bullet.destseq = 0;
 	bullet.poder = 50;
 	listaBullets.insert( listaBullets.end(), bullet );
+
+	delay = 0;
 }
 
 float cBullet::sindeg(float angle)
@@ -42,8 +45,16 @@ float cBullet::cosdeg(float angle)
 	return fAux;
 }
 
+bool cBullet::isReadyToShoot()
+{
+	if(delay > 15) return true;
+
+	return false;
+}
+
 void cBullet::UpdateBullets(cScene *Scene)
 {
+	delay++;
 	bool deleted;
 
 	//Mou tots els projectils

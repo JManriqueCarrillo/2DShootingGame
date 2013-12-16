@@ -80,6 +80,27 @@ void cScene::GenerateMap()
 		}
 	}
 
+	// Stuff random
+	for(y=3;y<SCENE_HEIGHT-3;y++)
+	{
+		for(x=2;x<SCENE_WIDTH-2;x++)
+		{
+			if(x==12 || x==12 || y==8 || y==9) continue;
+
+			random = rand() / (RAND_MAX / 100 + 1);
+			if(random == 0)
+			{
+				walkMap[x][y] = 0;
+				map[x][y] = 50;
+			}
+			else if(random == 1)
+			{
+				walkMap[x][y] = 0;
+				map[x][y] = 51;
+			}
+		}
+	}
+
 	// Generate the position of the doors
 	do{
 		random = 1 + rand() / (RAND_MAX / 4 + 1);
@@ -112,37 +133,16 @@ void cScene::GenerateMap()
 	// The exit door is always close at start
 	isDoorOpen = false;
 
-	// Stuff random
-	for(y=3;y<SCENE_HEIGHT-3;y++)
-	{
-		for(x=2;x<SCENE_WIDTH-2;x++)
-		{
-			if(x==12 || x==13 || y==8 || y==9) continue;
-
-			random = rand() / (RAND_MAX / 100 + 1);
-			if(random == 0)
-			{
-				walkMap[x][y] = 0;
-				map[x][y] = 50;
-			}
-			else if(random == 1)
-			{
-				walkMap[x][y] = 0;
-				map[x][y] = 51;
-			}
-		}
-	}
-
 	//Pathmap for the enemy
 	Pathmap=(int *)malloc(sizeof(int)*(SCENE_HEIGHT*SCENE_WIDTH));
 
 	int k=0;
 
-	for(y=0;y<SCENE_HEIGHT;y++)
+	for(y=2;y<SCENE_HEIGHT-2;y++)
 	{
-		for(x=0;x<SCENE_WIDTH;x++)
+		for(x=1;x<SCENE_WIDTH-1;x++)
 		{
-			Pathmap[k]=walkMap[x][y];
+			Pathmap[k]=map[x][y];
 			k++;
 		}
 	}
@@ -150,6 +150,7 @@ void cScene::GenerateMap()
 
 void cScene::MoveMap(int dir)
 {
+	int x,y;
 	static bool isGenerated;
 	int maxCounter;
 
@@ -281,8 +282,7 @@ void cScene::MoveByRadar(int x,int y)
 bool cScene::isWalkable(int x, int y)
 {
 	//if(map[x][y] == 0 || map[x][y] == 1) return false;
-	if(x >= 0 && x < SCENE_WIDTH && y >= 0 && y < SCENE_HEIGHT)
-		if(walkMap[x][y] == 0) return false;
+	if(walkMap[x][y] == 0) return false;
 
 	return true;
 }

@@ -19,9 +19,6 @@ cCritter::cCritter()
 
 	CritterDir = S;
 	isMoving = false;
-
-	life = 100;
-	points = 0;
 }
 cCritter::~cCritter()
 {
@@ -370,20 +367,7 @@ bool cCritter::GetCollision(int *dir)
 	return false;
 }
 
-void cCritter::Fire(int *posx, int *posy, int *angulo)
+void cCritter::Fire()
 {
-	//shoot = true;
-	GetPosition(posx,posy);
-
-	switch(CritterDir)
-	{
-		case N: *angulo = 90; break;
-		case S: *angulo = 270; break;
-		case O: *angulo = 180; break;
-		case E: *angulo = 0; break;
-		case NO: *angulo = 135; break;
-		case NE: *angulo = 45; break;
-		case SO: *angulo = 225; break;
-		case SE: *angulo = 315; break;
-	}
+	shoot = true;
 }

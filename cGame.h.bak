@@ -26,13 +26,11 @@ private:
 	bool LoopProcess();
 	bool LoopOutput();
 
-	bool CheckNewPlayerUpdate(cKeyboard *Keyboard);
-
 	cGraphicsLayer Graphics;
 	cInputLayer Input;
 	cController Controller;
 	cScene Scene;
-	sArrayPlayers Critters;
+	cCritter Critter;
 	sArray EnemArray;
 	cBullet Bullet;
 	

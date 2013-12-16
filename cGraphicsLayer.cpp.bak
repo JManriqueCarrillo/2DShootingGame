@@ -74,7 +74,7 @@ bool cGraphicsLayer::Init(HWND hWnd)
 
 // [ DirectX9 Initialization ]
 HRESULT cGraphicsLayer::InitD3D(void) {
-	D3DXCreateFont(g_pD3DDevice,     //D3D Device
+	return D3DXCreateFont(g_pD3DDevice,     //D3D Device
                 20,                                                             //Font height
                 0,                                                              //Font width
                 FW_NORMAL,                                              //Font Weight
@@ -84,33 +84,15 @@ HRESULT cGraphicsLayer::InitD3D(void) {
                 OUT_DEFAULT_PRECIS,                             //OutputPrecision
                 DEFAULT_QUALITY,                                //Quality
                 DEFAULT_PITCH|FF_DONTCARE,              //PitchAndFamily
-                "Cooper Black",                                                //pFacename,
-                &g_font20);          
-	return D3DXCreateFont(g_pD3DDevice,     //D3D Device
-                40,                                                             //Font height
-                0,                                                              //Font width
-                FW_NORMAL,                                              //Font Weight
-                1,                                                              //MipLevels
-                false,                                                  //Italic
-                DEFAULT_CHARSET,                                //CharSet
-                OUT_DEFAULT_PRECIS,                             //OutputPrecision
-                DEFAULT_QUALITY,                                //Quality
-                DEFAULT_PITCH|FF_DONTCARE,              //PitchAndFamily
-                "Cooper Black",                                                //pFacename,
-                &g_font40);                                               //ppFont
+                "Arial",                                                //pFacename,
+                &g_font);                                               //ppFont
 }
 
 //Drawing Function:
-void cGraphicsLayer::DrawString(int x, int y, COLORREF color, ID3DXFont *pFont, int center, const char *fmt, ...)
+void cGraphicsLayer::DrawString(int x, int y, COLORREF color, ID3DXFont *pFont, const char *fmt, ...)
 {
-	D3DXFONT_DESCA pDesc;
-	pFont->GetDesc(&pDesc);
-
-    RECT FontPos = { x, y, x + 800, y + pDesc.Height };
-	DWORD format = DT_TOP;
-	if(center == 1) format |= DT_CENTER;
-	if(center == 2) format |= DT_RIGHT;
-    pFont->DrawText(NULL, fmt, -1, &FontPos, format, color);
+        RECT FontPos = { x, y, x + 800, y + 16 };
+        pFont->DrawText(NULL, fmt, -1, &FontPos, DT_TOP, color);
 }
 
 void cGraphicsLayer::Finalize()
@@ -159,10 +141,6 @@ void cGraphicsLayer::LoadData()
 	D3DXCreateTextureFromFileEx(g_pD3DDevice,"tileset.png",0,0,1,0,D3DFMT_UNKNOWN,
 								D3DPOOL_DEFAULT,D3DX_FILTER_NONE,D3DX_FILTER_NONE,
 								0x00ff00ff,NULL,NULL,&texTileset);
-	//Player images
-	D3DXCreateTextureFromFileEx(g_pD3DDevice,"Players.png",0,0,1,0,D3DFMT_UNKNOWN,
-								D3DPOOL_DEFAULT,D3DX_FILTER_NONE,D3DX_FILTER_NONE,
-								0x00ff00ff,NULL,NULL,&texPlayers);
 }
 
 void cGraphicsLayer::UnLoadData()
@@ -202,11 +180,6 @@ void cGraphicsLayer::UnLoadData()
 		texMouse->Release();
 		texMouse = NULL;
 	}
-	if(texPlayers)
-	{
-		texPlayers->Release();
-		texPlayers = NULL;
-	}
 	if(g_pSprite)
 	{
 		g_pSprite->Release();
@@ -214,11 +187,8 @@ void cGraphicsLayer::UnLoadData()
 	}
 }
 
-bool cGraphicsLayer::Render(int state,cMouse *Mouse,cScene *Scene,sArrayPlayers *Critters,sArray *enemArray,cBullet *Bullet)
+bool cGraphicsLayer::Render(int state,cMouse *Mouse,cScene *Scene,cCritter *Critter,sArray *enemArray,cBullet *Bullet)
 {
-	static int alpha = 255;
-	static bool sum = false;
-
 	g_pD3DDevice->Clear( 0, NULL, D3DCLEAR_TARGET, 0xFF000000, 0, 0 );
 	g_pD3DDevice->BeginScene();
 
@@ -226,13 +196,8 @@ bool cGraphicsLayer::Render(int state,cMouse *Mouse,cScene *Scene,sArrayPlayers 
 		{
 			case STATE_MAIN:
 				g_pSprite->Begin(D3DXSPRITE_ALPHABLEND);
-					//g_pSprite->Draw(texMain,NULL,NULL,&D3DXVECTOR3(0.0f,0.0f,0.0f),0xFFFFFFFF);
-					//DrawMouse(Mouse);
-					if(sum) alpha+=5;
-					else alpha-=5;
-					if(alpha <= 100) sum = true;
-					if(alpha >= 255) sum = false;
-					DrawString(0,500,D3DCOLOR_ARGB(alpha, 255, 255, 255), g_font40, 1, "Press Start or Return");
+					g_pSprite->Draw(texMain,NULL,NULL,&D3DXVECTOR3(0.0f,0.0f,0.0f),0xFFFFFFFF);
+					DrawMouse(Mouse);
 				g_pSprite->End();
 				break;
 
@@ -243,11 +208,15 @@ bool cGraphicsLayer::Render(int state,cMouse *Mouse,cScene *Scene,sArrayPlayers 
 
 				g_pSprite->Begin(D3DXSPRITE_ALPHABLEND);
 					DrawSceneLayer2(Scene);
-					DrawUnits(Scene,Critters,enemArray);
+					DrawUnits(Scene,Critter,enemArray);
 					DrawBullets(Bullet);
 				g_pSprite->End();
 				break;
 		}
+
+		g_pSprite->Begin(D3DXSPRITE_ALPHABLEND);
+			DrawString(5,5,D3DCOLOR_ARGB(255,255, 255, 0), g_font, Scene->logtext);
+		g_pSprite->End();
 
 	g_pD3DDevice->EndScene();
 	g_pD3DDevice->Present( NULL, NULL, NULL, NULL );
@@ -418,98 +387,41 @@ bool cGraphicsLayer::DrawSceneLayer2(cScene *Scene)
 	}
 	return true;
 }
-bool cGraphicsLayer::DrawUnits(cScene *Scene,sArrayPlayers *Critters,sArray *enemArray)
+bool cGraphicsLayer::DrawUnits(cScene *Scene,cCritter *Critter,sArray *enemArray)
 {
 	int cx,cy,posx,posy;
 	RECT rc;
 
-	for(int i=0; i<Critters->numPlayers;i++)
+	//Draw Critter
+	Critter->GetCell(&cx,&cy);
+	if(Scene->Visible(cx,cy))
 	{
-		cCritter *Critter = &(Critters->Players[i]);
-		
-		//Draw Critter
-		Critter->GetCell(&cx,&cy);
-		if(Scene->Visible(cx,cy))
+		float offsetx = 0, offsety = 0;
+		if(Scene->isMoving)
 		{
-			float offsetx = 0, offsety = 0;
-			if(Scene->isMoving)
-			{
-				Scene->getMovePlayerOffsets(&offsetx,&offsety);
-				Critter->GetPosition(&posx,&posy);
-				Critter->SetPosition(posx + (offsetx*32), posy + (offsety*32));
-			}
+			Scene->getMovePlayerOffsets(&offsetx,&offsety);
+			Critter->GetPosition(&posx,&posy);
+			Critter->SetPosition(posx + (offsetx*32), posy + (offsety*32));
+		}
 
-			Critter->GetRect(&rc,&posx,&posy,Scene);
-			g_pSprite->Draw(texCharacters,&rc,NULL, 
+		Critter->GetRect(&rc,&posx,&posy,Scene);
+		g_pSprite->Draw(texCharacters,&rc,NULL, 
+						&D3DXVECTOR3(float(posx),float(posy),0.0f), 
+						0xFFFFFFFF);
+
+
+		if(Critter->GetSelected())
+		{
+			Critter->GetRectLife(&rc,&posx,&posy,Scene);
+			g_pSprite->Draw(texMouse,&rc,NULL, 
 							&D3DXVECTOR3(float(posx),float(posy),0.0f), 
 							0xFFFFFFFF);
-
-
-			if(Critter->GetSelected())
-			{
-				Critter->GetRectLife(&rc,&posx,&posy,Scene);
-				g_pSprite->Draw(texMouse,&rc,NULL, 
-								&D3DXVECTOR3(float(posx),float(posy),0.0f), 
-								0xFFFFFFFF);
-			}
 		}
-
-		// Draw Critter HUD
-		SetRect(&rc,48*i,48*0,48*(i+1),48*1);
-		char vida[16];
-		sprintf(vida,"%d",Critter->life);
-		char puntos[16];
-		sprintf(puntos,"%d points",Critter->points);
-
-		switch(i)
-		{
-			case 0: posx = 16; posy = 16; 
-				DrawString(posx+56,posy-8,D3DCOLOR_ARGB(255, 255, 255, 255), g_font40, 0, vida);
-				DrawString(posx+56,posy+28,D3DCOLOR_ARGB(255, 255, 255, 255), g_font20, 0, puntos);
-				break;
-			case 1: posx = 800-64; posy = 16; 
-				DrawString(-16-56,posy-8,D3DCOLOR_ARGB(255, 255, 255, 255), g_font40, 2, vida);
-				DrawString(-16-56,posy+28,D3DCOLOR_ARGB(255, 255, 255, 255), g_font20, 2, puntos);
-				break;
-			case 2: posx = 16; posy = 600-64; 
-				DrawString(posx+56,posy-8,D3DCOLOR_ARGB(255, 255, 255, 255), g_font40, 0, vida); 
-				DrawString(posx+56,posy+28,D3DCOLOR_ARGB(255, 255, 255, 255), g_font20, 0, puntos); 
-				break;
-			case 3: posx = 800-64; posy = 600-64; 
-				DrawString(-16-56,posy-8,D3DCOLOR_ARGB(255, 255, 255, 255), g_font40, 2, vida);
-				DrawString(-16-56,posy+28,D3DCOLOR_ARGB(255, 255, 255, 255), g_font20, 2, puntos);
-				break;
-		}
-
-		g_pSprite->Draw(texPlayers,&rc,NULL, 
-			&D3DXVECTOR3(float(posx),float(posy),0.0f), 
-			0xFFFFFFFF);
-
-		/*Critter->GetRectRadar(&rc,&posx,&posy);
-		g_pSprite->Draw(texTiles,&rc,NULL, 
-						&D3DXVECTOR3(float(posx),float(posy),0.0f), 
-						0xFFFFFFFF);*/
-		
-		//Draw Fire
-		/*if(Critter->GetShooting())
-		{
-			if(Critter->IsFiring())
-			{
-				//Advance animation & draw
-				Critter->GetRectShoot(&rc,&posx,&posy,Scene);
-						
-				g_pSprite->Draw(texCharacters,&rc,NULL, 
-								&D3DXVECTOR3(float(posx),float(posy),0.0f), 
-								0xFFFFFFFF);
-			}
-			else
-			{
-				//Advance animation
-				Critter->GetRectShoot(&rc,&posx,&posy,Scene);
-			}
-		}*/
 	}
-
+	Critter->GetRectRadar(&rc,&posx,&posy);
+	g_pSprite->Draw(texTiles,&rc,NULL, 
+					&D3DXVECTOR3(float(posx),float(posy),0.0f), 
+					0xFFFFFFFF);
 	//Draw Enemies
 	for (int i=0;i<enemArray->numEnemies;i++)
 	{
@@ -521,12 +433,34 @@ bool cGraphicsLayer::DrawUnits(cScene *Scene,sArrayPlayers *Critters,sArray *ene
 						&D3DXVECTOR3(float(posx),float(posy),0.0f), 
 						0xFFFFFFFF);
 		}
+		enemArray->enemies[i].GetRectRadar(&rc,&posx,&posy);
+		
 
-		/*enemArray->enemies[i].GetRectRadar(&rc,&posx,&posy);
+		
+
 		g_pSprite->Draw(texTiles,&rc,NULL, 
 					&D3DXVECTOR3(float(posx),float(posy),0.0f)
 					, 
-					0xFFFFFFFF);*/
+					0xFFFFFFFF);
+		
+	}
+	//Draw Fire
+	if(Critter->GetShooting())
+	{
+		if(Critter->IsFiring())
+		{
+			//Advance animation & draw
+			Critter->GetRectShoot(&rc,&posx,&posy,Scene);
+						
+			g_pSprite->Draw(texCharacters,&rc,NULL, 
+							&D3DXVECTOR3(float(posx),float(posy),0.0f), 
+							0xFFFFFFFF);
+					}
+		else
+		{
+			//Advance animation
+			Critter->GetRectShoot(&rc,&posx,&posy,Scene);
+		}
 	}
 	return true;
 }
@@ -571,6 +505,7 @@ bool cGraphicsLayer::DrawBullets(cBullet *Bullet)
 		D3DXMatrixRotationZ(&matRotate, 0);
 		g_pSprite->SetTransform(&matRotate);
 
+		
 		illista++;
 	}
 

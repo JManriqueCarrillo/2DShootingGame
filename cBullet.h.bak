@@ -29,6 +29,7 @@ public:
 	
 	void NewBullet ( int id, float x, float y, float fAngulo, bool rebota, int numRebotes, int speed );
 	void UpdateBullets(cScene *Scene);
+	bool isReadyToShoot();
 	void destroy();
 	void GetRect(RECT *rc, int destseq);
 
@@ -36,6 +37,9 @@ public:
 
 	float sindeg(float angle);
 	float cosdeg(float angle);
+
+private:
+	int delay;
 };
 
 #endif
